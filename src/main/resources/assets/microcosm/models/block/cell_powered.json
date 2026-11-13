@@ -1,1 +1,7 @@
-{ "parent": "minecraft:block/cube_all", "textures": { "all": "microcosm:block/cell_powered" } }
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "microcosm:block/cell_powered"
+  },
+  "render_type": "minecraft:cutout"
+}

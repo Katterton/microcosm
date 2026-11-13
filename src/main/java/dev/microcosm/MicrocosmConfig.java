@@ -8,6 +8,7 @@ public final class MicrocosmConfig {
 
     public static final ModConfigSpec.BooleanValue ALLOW_PLAYER_PLACEMENT_IN_ROOMS;
     public static final ModConfigSpec.IntValue MAX_QUEUED_ACTIONS;
+    public static final ModConfigSpec.IntValue PREVIEW_INTERVAL;
 
     public static final ModConfigSpec.BooleanValue ENTERING_ENABLED;
     public static final ModConfigSpec.IntValue ENTERING_MAX_DEPTH;
@@ -59,6 +60,8 @@ public final class MicrocosmConfig {
                 .define("allow_player_placement_in_rooms", true);
         MAX_QUEUED_ACTIONS = b.comment("Maximum number of queued actions per manipulator")
                 .defineInRange("max_queued_actions", 64, 1, 4096);
+        PREVIEW_INTERVAL = b.comment("Ticks between checks whether a room changed, to update the miniature shown inside its cell (0 = no miniatures)")
+                .defineInRange("preview_interval_ticks", 20, 0, 72000);
         b.pop();
         b.comment("Entering rooms in person with the size shifter").push("entering");
         ENTERING_ENABLED = b.comment("Whether the size shifter can be used at all")

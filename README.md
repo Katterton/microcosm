@@ -10,7 +10,7 @@ with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.1.0)
+## Features (v0.2.0)
 
 ### Cells and rooms
 
@@ -21,6 +21,10 @@ with whatever mods your pack provides.
   closed off with unbreakable `microcosm:cell_wall`.
 - **Chained chunk loading:** a room stays loaded as long as its cell is loaded.
 - **Break protection:** a cell cannot be broken while its room contains blocks or players.
+- **Miniature:** a cell is a glass-framed case that shows its room inside at 1/16 scale, one room block per pixel,
+  with the blocks' own face textures. The server checks rooms for changes about once per second
+  (`preview_interval_ticks` in the server config, 0 turns miniatures off) and only sends updates when something
+  changed.
 
 ### Ports
 

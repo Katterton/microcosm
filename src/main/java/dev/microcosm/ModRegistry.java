@@ -32,7 +32,8 @@ public final class ModRegistry {
 
     /** A block that holds a 16x16x16 room one scale level down. */
     public static final DeferredBlock<CellBlock> CELL = BLOCKS.registerBlock("cell", CellBlock::new,
-            p -> p.mapColor(MapColor.COLOR_CYAN).strength(3.5f, 1200f).pushReaction(PushReaction.BLOCK));
+            p -> p.mapColor(MapColor.COLOR_CYAN).strength(3.5f, 1200f).pushReaction(PushReaction.BLOCK)
+                    .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
 
     /** Unbreakable boundary between a room and empty space. Not obtainable. */
     public static final DeferredBlock<Block> CELL_WALL = BLOCKS.registerSimpleBlock("cell_wall",
