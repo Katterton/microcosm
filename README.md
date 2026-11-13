@@ -69,6 +69,10 @@ Ablageort: `data/<namespace>/microcosm/fabrication/<name>.json`
 
 Beispiele: `src/main/resources/data/microcosm/microcosm/fabrication/`.
 
+**JEI:** Ist JEI installiert, erscheint die Kategorie „Mikrokosmos-Fertigung“. Sie zeigt das Muster Schicht für Schicht
+(wechselt automatisch), die Materialmengen, das Werkzeug und das Ergebnis. Die Rezepte werden beim Login und nach
+`/reload` vom Server an die Clients geschickt, Struktur-Rezepte bereits fertig ausgewertet.
+
 **KubeJS:** Die Rezepte sind normale Datapack-Dateien. Mit KubeJS legt man sie einfach unter
 `kubejs/data/<namespace>/microcosm/fabrication/<name>.json` ab; `/reload` lädt sie neu.
 
@@ -78,7 +82,7 @@ Benötigt Java 25.
 
 ```bash
 ./gradlew build          # Jar in build/libs
-./gradlew runClient      # Testclient
+./gradlew runClient      # Testclient (mit JEI)
 ```
 
 Testclient direkt in eine Welt: `./gradlew runClient -PquickPlay=<weltname>`.
@@ -93,6 +97,6 @@ echo "eula=true" > run/eula.txt
 
 ## Nächste Schritte
 
-1. JEI-Integration (Rezeptansicht Schicht für Schicht)
-2. 3D-Darstellung im Mikroskop statt Schichtansicht
+1. 3D-Darstellung im Mikroskop statt Schichtansicht
+2. EMI-Integration
 3. Betreten von Räumen als freischaltbares Late-Game-Feature

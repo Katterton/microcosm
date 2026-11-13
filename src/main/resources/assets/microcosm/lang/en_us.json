@@ -72,5 +72,11 @@
   "message.microcosm.result.no_actuator": "No manipulator at this cell",
   "message.microcosm.status.no_actuator": "No manipulator at this cell",
   "message.microcosm.result.queued": "Queued",
-  "message.microcosm.status.queued": "Queued"
+  "message.microcosm.status.queued": "Queued",
+  "jei.microcosm.fabrication": "Microcosm Fabrication",
+  "jei.microcosm.local": "Local · level %s · %sx%sx%s",
+  "jei.microcosm.cube": "Cube · level %s · %sx%sx%s",
+  "jei.microcosm.layer": "Layer %s/%s",
+  "jei.microcosm.any": "Anything",
+  "jei.microcosm.air": "Must be air"
 }

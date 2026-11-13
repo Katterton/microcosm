@@ -72,5 +72,11 @@
   "message.microcosm.result.no_actuator": "Kein Manipulator an dieser Zelle",
   "message.microcosm.status.no_actuator": "Kein Manipulator an dieser Zelle",
   "message.microcosm.result.queued": "Eingereiht",
-  "message.microcosm.status.queued": "Eingereiht"
+  "message.microcosm.status.queued": "Eingereiht",
+  "jei.microcosm.fabrication": "Mikrokosmos-Fertigung",
+  "jei.microcosm.local": "Lokal · Ebene %s · %sx%sx%s",
+  "jei.microcosm.cube": "Würfel · Ebene %s · %sx%sx%s",
+  "jei.microcosm.layer": "Schicht %s/%s",
+  "jei.microcosm.any": "Beliebig",
+  "jei.microcosm.air": "Muss Luft sein"
 }

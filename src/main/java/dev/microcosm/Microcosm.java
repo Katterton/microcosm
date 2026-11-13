@@ -5,7 +5,11 @@ import dev.microcosm.command.MicrocosmCommands;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.device.ViewerSessions;
+import dev.microcosm.fabrication.RecipeDisplay;
+import dev.microcosm.network.RecipeSyncPayload;
 import dev.microcosm.network.ViewPayload;
+import net.neoforged.neoforge.event.OnDatapackSyncEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
 import dev.microcosm.network.ViewerRequestPayload;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.PortLinks;
@@ -51,6 +55,7 @@ public class Microcosm {
         container.registerConfig(ModConfig.Type.SERVER, MicrocosmConfig.SPEC);
         modBus.addListener(RegisterPayloadHandlersEvent.class, e -> e.registrar("1")
                 .playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC)
+                .playToClient(RecipeSyncPayload.TYPE, RecipeSyncPayload.STREAM_CODEC)
                 .playToServer(ViewerRequestPayload.TYPE, ViewerRequestPayload.STREAM_CODEC,
                         (payload, context) -> ViewerSessions.handle((ServerPlayer) context.player(), payload)));
         modBus.addListener(RegisterTicketControllersEvent.class, e -> e.register(RoomManager.TICKETS));
@@ -63,6 +68,10 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
         NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
+        NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, e -> {
+            RecipeSyncPayload payload = new RecipeSyncPayload(RecipeDisplay.all(e.getPlayerList().getServer()));
+            e.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, payload));
+        });
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> ViewerSessions.onServerTick(e.getServer()));
     }
 

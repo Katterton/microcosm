@@ -27,7 +27,14 @@ sourceSets.main.resources {
 }
 
 repositories {
-    // Add here additional repositories if required by some of the dependencies below.
+    maven {
+        name = 'BlameJared (JEI)'
+        url = 'https://maven.blamejared.com'
+        content {
+            includeGroup 'mezz.jei'
+            includeGroup 'net.mezzdev.config'
+        }
+    }
 }
 
 base {
@@ -115,6 +122,11 @@ configurations {
 }
 
 dependencies {
+    // JEI: optional recipe viewer integration (compiled against the API, full mod only in dev runs)
+    compileOnly "mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
     // compileOnly "mezz.jei:jei-${mc_version}-common-api:${jei_version}"
