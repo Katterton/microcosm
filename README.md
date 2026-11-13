@@ -21,9 +21,28 @@ Dort werden Gegenstände und ganze Maschinenblöcke über 3D-Rezepte gefertigt, 
   - **Redstone in eine Richtung**, umschaltbar per Rechtsklick: `input` (grün) leitet das Signal von außen in den Raum,
     `output` (orange) vom Raum nach außen. Jede Grenze kostet 1 Tick.
   - Seiten mit Port lösen keine Würfelrezept-Prüfung aus, nur Seiten ohne Port.
+- **Zugangsgeräte** (neben eine Zelle setzen). Ohne „Betreten“ wird der Raum per Gerät gesehen und bearbeitet:
+
+  | Gerät | Stufe | Funktion |
+  |---|---|---|
+  | Lichtmikroskop | 1 | Live-Farbansicht des Raums (Ebene 1), Schicht für Schicht |
+  | Manipulatorarm | 1 | 9 Slots; setzt, baut ab und benutzt Items in Räumen der Ebene 1 |
+  | Elektronenmikroskop | 2 | Graustufen, Aktualisierung alle 3 s, braucht Energie, kann in verschachtelte Zellen (Ebene 2) zoomen |
+  | Nanosonde | 2 | wie der Arm, langsamer, braucht Energie, erreicht Ebene 2 |
+  | Feldmanipulator | 3 | Ansicht und Manipulator in einem, **ohne Live-Bild**: arbeitet nur mit Scans (Energie, 5 s), erreicht Ebene 3 |
+
+  - **Bedienung:** Rechtsklick auf den Viewer öffnet die Raumansicht. Linksklick führt den gewählten Modus aus
+    (Setzen, Abbauen, Benutzen), Rechtsklick auf eine Zelle zoomt hinein, das Mausrad wechselt die Schicht.
+    Benutzen mit einem Werkzeug löst lokale Fertigungsrezepte aus.
+  - **Inventar:** Rechtsklick auf Arm oder Sonde, beim Feldmanipulator Schleichen + Rechtsklick. Trichter und Pipes
+    können Items einfüllen, Energie kommt über die normale NeoForge-Energie-Capability.
+  - **Progression:** Nanolinsen werden auf Ebene 1 gefertigt (lokales Rezept), Quantengitter auf Ebene 2. Stufe-2-Geräte
+    brauchen Nanolinsen, der Feldmanipulator Quantengitter.
+  - Alle Zeiten, Energiekosten und Puffergrößen stehen in `serverconfig/microcosm-server.toml`. Dort lässt sich auch
+    verbieten, dass Spieler in Räumen von Hand bauen.
 - **3D-Fertigungsrezepte** (Datapack, `/reload`-fähig): lokale Rezepte mit Werkzeug und Würfelrezepte.
-- **Debug-Befehle** (OP): `/microcosm enter [pos]`, `/microcosm exit`, `/microcosm check [pos]`, `/microcosm info`.
-  Das Betreten ist vorerst nur per Befehl möglich, bis Mikroskop und Manipulator existieren.
+- **Debug-Befehle** (OP): `/microcosm enter [pos]`, `/microcosm exit`, `/microcosm check [pos]`, `/microcosm info`,
+  `/microcosm act <manipulator> <place|break|use> <slot> <x> <y> <z> ["x y z;..." verschachtelte Zellen]`.
 
 ## Fertigungsrezepte
 
@@ -50,6 +69,9 @@ Ablageort: `data/<namespace>/microcosm/fabrication/<name>.json`
 
 Beispiele: `src/main/resources/data/microcosm/microcosm/fabrication/`.
 
+**KubeJS:** Die Rezepte sind normale Datapack-Dateien. Mit KubeJS legt man sie einfach unter
+`kubejs/data/<namespace>/microcosm/fabrication/<name>.json` ab; `/reload` lädt sie neu.
+
 ## Entwicklung
 
 Benötigt Java 25.
@@ -59,7 +81,9 @@ Benötigt Java 25.
 ./gradlew runClient      # Testclient
 ```
 
-Smoke-Test auf dem Dedicated Server:
+Testclient direkt in eine Welt: `./gradlew runClient -PquickPlay=<weltname>`.
+
+Smoke-Test auf dem Dedicated Server (27 Prüfungen: Räume, Rezepte, Ports, Geräte):
 
 ```bash
 rm -rf run/world && mkdir -p run/world/datapacks && cp -r dev/smoketest-datapack run/world/datapacks/mctest
@@ -69,7 +93,6 @@ echo "eula=true" > run/eula.txt
 
 ## Nächste Schritte
 
-1. Mikroskop: synchronisierte Spiegelung des Raums auf dem Client plus Rendering
-2. Manipulator: Platzieren und Abbauen aus der Ferne
-3. Elektronenmikroskop + Sonde (Level 2), Feldmanipulator (Level 3)
-4. JEI/EMI mit 3D-Ansicht, KubeJS-Unterstützung, Config
+1. JEI-Integration (Rezeptansicht Schicht für Schicht)
+2. 3D-Darstellung im Mikroskop statt Schichtansicht
+3. Betreten von Räumen als freischaltbares Late-Game-Feature

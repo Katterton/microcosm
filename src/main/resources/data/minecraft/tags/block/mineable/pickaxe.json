@@ -1,0 +1,11 @@
+{
+  "values": [
+    "microcosm:optical_microscope",
+    "microcosm:manipulator_arm",
+    "microcosm:electron_microscope",
+    "microcosm:nano_probe",
+    "microcosm:field_manipulator",
+    "microcosm:cell",
+    "microcosm:port"
+  ]
+}

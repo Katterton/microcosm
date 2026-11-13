@@ -4,7 +4,20 @@ import dev.microcosm.block.CellBlock;
 import dev.microcosm.command.MicrocosmCommands;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
+import dev.microcosm.device.ViewerSessions;
+import dev.microcosm.network.ViewPayload;
+import dev.microcosm.network.ViewerRequestPayload;
+import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.PortLinks;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.util.FakePlayer;
+import net.neoforged.neoforge.event.level.BlockEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import dev.microcosm.world.RoomManager;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -33,8 +46,13 @@ public class Microcosm {
         return Identifier.fromNamespaceAndPath(MODID, path);
     }
 
-    public Microcosm(IEventBus modBus) {
+    public Microcosm(IEventBus modBus, ModContainer container) {
         ModRegistry.register(modBus);
+        container.registerConfig(ModConfig.Type.SERVER, MicrocosmConfig.SPEC);
+        modBus.addListener(RegisterPayloadHandlersEvent.class, e -> e.registrar("1")
+                .playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC)
+                .playToServer(ViewerRequestPayload.TYPE, ViewerRequestPayload.STREAM_CODEC,
+                        (payload, context) -> ViewerSessions.handle((ServerPlayer) context.player(), payload)));
         modBus.addListener(RegisterTicketControllersEvent.class, e -> e.register(RoomManager.TICKETS));
         modBus.addListener(BuildCreativeModeTabContentsEvent.class, Microcosm::addToTabs);
         modBus.addListener(RegisterCapabilitiesEvent.class, Microcosm::registerCapabilities);
@@ -44,6 +62,8 @@ public class Microcosm {
                 e -> e.addListener(id("fabrication_recipes"), new FabricationRecipes()));
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
+        NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
+        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> ViewerSessions.onServerTick(e.getServer()));
     }
 
     /** Ports tunnel these capabilities; add more here to tunnel them too. */
@@ -51,6 +71,10 @@ public class Microcosm {
         tunnel(event, Capabilities.Item.BLOCK);
         tunnel(event, Capabilities.Fluid.BLOCK);
         tunnel(event, Capabilities.Energy.BLOCK);
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModRegistry.DEVICE_BLOCK_ENTITY.get(),
+                (device, side) -> device.kind().hasInventory ? VanillaContainerWrapper.of(device) : null);
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ModRegistry.DEVICE_BLOCK_ENTITY.get(),
+                (device, side) -> device.energy());
     }
 
     private static <T> void tunnel(RegisterCapabilitiesEvent event, BlockCapability<T, @Nullable Direction> capability) {
@@ -62,10 +86,23 @@ public class Microcosm {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
             event.accept(ModRegistry.CELL_ITEM.get());
             event.accept(ModRegistry.PORT_ITEM.get());
+            ModRegistry.DEVICE_ITEMS.values().forEach(item -> event.accept(item.get()));
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModRegistry.MICRO_SOLDERING_IRON.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModRegistry.LOGIC_CHIP.get());
+            event.accept(ModRegistry.NANO_LENS.get());
+            event.accept(ModRegistry.QUANTUM_LATTICE.get());
+        }
+    }
+
+    /** Pack makers can forbid building rooms by hand; machines (fake players) are not affected. */
+    private static void onPlace(BlockEvent.EntityPlaceEvent event) {
+        if (event.getEntity() instanceof Player player && !(player instanceof FakePlayer)
+                && event.getLevel() instanceof ServerLevel level && MicrocosmLevels.depth(level) > 0
+                && !MicrocosmConfig.ALLOW_PLAYER_PLACEMENT_IN_ROOMS.getAsBoolean()) {
+            event.setCanceled(true);
+            player.sendOverlayMessage(Component.translatable("message.microcosm.no_hand_placement"));
         }
     }
 

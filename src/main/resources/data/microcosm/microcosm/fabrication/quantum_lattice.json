@@ -1,0 +1,29 @@
+{
+  "mode": "local",
+  "scale": 2,
+  "pattern": [
+    [
+      "ODO",
+      "DED",
+      "ODO"
+    ],
+    [
+      " C ",
+      "CSC",
+      " C "
+    ]
+  ],
+  "key": {
+    "O": "minecraft:obsidian",
+    "D": "minecraft:diamond_block",
+    "E": "minecraft:end_stone",
+    "C": "minecraft:copper_block",
+    "S": "minecraft:sculk_catalyst"
+  },
+  "tool": "microcosm:micro_soldering_iron",
+  "tool_damage": 4,
+  "result": {
+    "id": "microcosm:quantum_lattice",
+    "count": 1
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "Q": "microcosm:quantum_lattice",
+    "E": "minecraft:ender_eye",
+    "M": "microcosm:electron_microscope",
+    "N": "minecraft:netherite_ingot",
+    "P": "microcosm:nano_probe",
+    "C": "microcosm:logic_chip"
+  },
+  "pattern": [
+    "QEQ",
+    "MNP",
+    "QCQ"
+  ],
+  "result": {
+    "id": "microcosm:field_manipulator",
+    "count": 1
+  }
+}

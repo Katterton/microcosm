@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "D": "minecraft:diamond",
+    "L": "microcosm:nano_lens",
+    "R": "minecraft:redstone_block",
+    "M": "microcosm:optical_microscope",
+    "I": "minecraft:iron_block",
+    "C": "microcosm:logic_chip"
+  },
+  "pattern": [
+    "DLD",
+    "RMR",
+    "ICI"
+  ],
+  "result": {
+    "id": "microcosm:electron_microscope",
+    "count": 1
+  }
+}

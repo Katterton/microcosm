@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "S": "minecraft:spyglass",
+    "I": "minecraft:iron_ingot",
+    "G": "minecraft:glass",
+    "C": "minecraft:copper_ingot"
+  },
+  "pattern": [
+    " S ",
+    "IGI",
+    "ICI"
+  ],
+  "result": {
+    "id": "microcosm:optical_microscope",
+    "count": 1
+  }
+}

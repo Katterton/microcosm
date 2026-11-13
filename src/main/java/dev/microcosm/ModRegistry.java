@@ -3,6 +3,11 @@ package dev.microcosm;
 import dev.microcosm.block.CellBlock;
 import dev.microcosm.block.CellBlockEntity;
 import dev.microcosm.block.PortBlock;
+import dev.microcosm.device.DeviceBlock;
+import dev.microcosm.device.DeviceBlockEntity;
+import dev.microcosm.device.DeviceKind;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
@@ -39,15 +44,36 @@ public final class ModRegistry {
     public static final DeferredItem<BlockItem> CELL_ITEM = ITEMS.registerSimpleBlockItem("cell", CELL);
     public static final DeferredItem<BlockItem> PORT_ITEM = ITEMS.registerSimpleBlockItem("port", PORT);
 
+    /** The room access devices, one block and item per kind. */
+    public static final Map<DeviceKind, DeferredBlock<DeviceBlock>> DEVICES = new EnumMap<>(DeviceKind.class);
+    public static final Map<DeviceKind, DeferredItem<BlockItem>> DEVICE_ITEMS = new EnumMap<>(DeviceKind.class);
+
+    static {
+        for (DeviceKind kind : DeviceKind.values()) {
+            DeferredBlock<DeviceBlock> block = BLOCKS.registerBlock(kind.id, p -> new DeviceBlock(p, kind),
+                    p -> p.mapColor(MapColor.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops());
+            DEVICES.put(kind, block);
+            DEVICE_ITEMS.put(kind, ITEMS.registerSimpleBlockItem(kind.id, block));
+        }
+    }
+
     /** Example fabrication tool used by local recipes. */
     public static final DeferredItem<Item> MICRO_SOLDERING_IRON = ITEMS.registerItem("micro_soldering_iron", Item::new,
             p -> p.durability(128));
 
     /** Example fabrication product. */
     public static final DeferredItem<Item> LOGIC_CHIP = ITEMS.registerSimpleItem("logic_chip");
+    /** Fabricated on scale level 1; needed for tier 2 devices. */
+    public static final DeferredItem<Item> NANO_LENS = ITEMS.registerSimpleItem("nano_lens");
+    /** Fabricated on scale level 2; needed for the tier 3 device. */
+    public static final DeferredItem<Item> QUANTUM_LATTICE = ITEMS.registerSimpleItem("quantum_lattice");
 
     public static final Supplier<BlockEntityType<CellBlockEntity>> CELL_BLOCK_ENTITY = BLOCK_ENTITIES.register("cell",
             () -> new BlockEntityType<>(CellBlockEntity::new, CELL.get()));
+
+    public static final Supplier<BlockEntityType<DeviceBlockEntity>> DEVICE_BLOCK_ENTITY = BLOCK_ENTITIES.register("device",
+            () -> new BlockEntityType<>(DeviceBlockEntity::new,
+                    DEVICES.values().stream().map(DeferredBlock::get).toArray(Block[]::new)));
 
     private ModRegistry() {}
 

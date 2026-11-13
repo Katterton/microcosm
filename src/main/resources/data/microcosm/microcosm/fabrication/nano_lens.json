@@ -1,0 +1,22 @@
+{
+  "mode": "local",
+  "scale": 1,
+  "pattern": [
+    [
+      "GAG",
+      "AQA",
+      "GAG"
+    ]
+  ],
+  "key": {
+    "G": "minecraft:glass",
+    "A": "minecraft:amethyst_block",
+    "Q": "minecraft:quartz_block"
+  },
+  "tool": "microcosm:micro_soldering_iron",
+  "tool_damage": 2,
+  "result": {
+    "id": "microcosm:nano_lens",
+    "count": 2
+  }
+}

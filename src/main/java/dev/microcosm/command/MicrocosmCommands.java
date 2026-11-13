@@ -2,7 +2,14 @@ package dev.microcosm.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.microcosm.block.CellBlock;
+import dev.microcosm.device.DeviceAction;
+import dev.microcosm.device.DeviceBlockEntity;
+import dev.microcosm.device.RoomPath;
+import java.util.ArrayList;
+import java.util.List;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.world.MicrocosmLevels;
@@ -44,7 +51,63 @@ public final class MicrocosmCommands {
                         .executes(c -> check(c.getSource(), lookedAtCell(c.getSource())))
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(c -> check(c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos")))))
-                .then(Commands.literal("info").executes(c -> info(c.getSource()))));
+                .then(Commands.literal("info").executes(c -> info(c.getSource())))
+                .then(Commands.literal("act")
+                        .then(Commands.argument("actuator", BlockPosArgument.blockPos())
+                                .then(Commands.argument("type", StringArgumentType.word())
+                                        .then(Commands.argument("slot", IntegerArgumentType.integer(0, 8))
+                                                .then(Commands.argument("x", IntegerArgumentType.integer(0, 15))
+                                                        .then(Commands.argument("y", IntegerArgumentType.integer(0, 15))
+                                                                .then(Commands.argument("z", IntegerArgumentType.integer(0, 15))
+                                                                        .executes(c -> act(c, ""))
+                                                                        .then(Commands.argument("nested", StringArgumentType.greedyString())
+                                                                                .executes(c -> act(c, StringArgumentType.getString(c, "nested"))))))))))));
+    }
+
+    /**
+     * {@code /microcosm act <actuator> <place|break|use> <slot> <x> <y> <z> [nested]} queues an action like the
+     * viewer does. {@code nested} lists room-local positions of nested cells to go deeper, e.g. {@code "4 5 5;1 1 1"}.
+     */
+    private static int act(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c, String nested)
+            throws CommandSyntaxException {
+        CommandSourceStack source = c.getSource();
+        ServerLevel level = source.getLevel();
+        BlockPos actuatorPos = BlockPosArgument.getLoadedBlockPos(c, "actuator");
+        if (!(level.getBlockEntity(actuatorPos) instanceof DeviceBlockEntity actuator) || !actuator.kind().isActuator()) {
+            source.sendFailure(Component.translatable("commands.microcosm.not_an_actuator"));
+            return 0;
+        }
+        BlockPos root = RoomPath.adjacentCell(level, actuatorPos);
+        if (root == null) {
+            source.sendFailure(Component.translatable("message.microcosm.no_cell"));
+            return 0;
+        }
+        List<BlockPos> path = new ArrayList<>(List.of(root));
+        for (String part : nested.split(";")) {
+            if (part.isBlank()) {
+                continue;
+            }
+            String[] xyz = part.trim().split("\\s+");
+            RoomManager.Room room = RoomPath.resolve(level, path);
+            if (room == null || xyz.length != 3) {
+                source.sendFailure(Component.translatable("commands.microcosm.bad_path"));
+                return 0;
+            }
+            path.add(room.origin().offset(Integer.parseInt(xyz[0]), Integer.parseInt(xyz[1]), Integer.parseInt(xyz[2])));
+        }
+        DeviceAction.Type type;
+        try {
+            type = DeviceAction.Type.valueOf(StringArgumentType.getString(c, "type").toUpperCase());
+        } catch (IllegalArgumentException e) {
+            source.sendFailure(Component.translatable("commands.microcosm.bad_action"));
+            return 0;
+        }
+        BlockPos local = new BlockPos(IntegerArgumentType.getInteger(c, "x"), IntegerArgumentType.getInteger(c, "y"),
+                IntegerArgumentType.getInteger(c, "z"));
+        DeviceAction.Result result = actuator.enqueue(
+                new DeviceAction(path, local, type, IntegerArgumentType.getInteger(c, "slot")));
+        source.sendSuccess(() -> Component.translatable("message.microcosm.result." + result.name().toLowerCase()), false);
+        return result == DeviceAction.Result.QUEUED ? 1 : 0;
     }
 
     private static BlockPos lookedAtCell(CommandSourceStack source) throws CommandSyntaxException {

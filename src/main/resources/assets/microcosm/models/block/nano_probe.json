@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "microcosm:block/nano_probe_side",
+    "top": "microcosm:block/nano_probe_top",
+    "bottom": "microcosm:block/cell_wall"
+  }
+}

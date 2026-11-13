@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "microcosm:block/electron_microscope"
+    }
+  }
+}

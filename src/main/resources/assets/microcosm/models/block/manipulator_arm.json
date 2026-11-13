@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "side": "microcosm:block/manipulator_arm_side",
+    "top": "microcosm:block/manipulator_arm_top",
+    "bottom": "microcosm:block/cell_wall"
+  }
+}
