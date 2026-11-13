@@ -35,7 +35,7 @@ public class ViewerScreen extends Screen {
     private static final int SLOT = 18;
 
     private ViewPayload view;
-    private int layer;
+    private static int layer = 15;
     private DeviceAction.Type mode = DeviceAction.Type.PLACE;
     private int slot;
     private int left;
@@ -43,6 +43,10 @@ public class ViewerScreen extends Screen {
     private final List<Button> modeButtons = new ArrayList<>();
     private @Nullable Button backButton;
     private @Nullable Button scanButton;
+    private @Nullable Button viewButton;
+    /** View mode and rotation are remembered while the game runs. */
+    private static boolean iso;
+    private static final IsoView isoView = new IsoView();
 
     public ViewerScreen(ViewPayload view) {
         super(Component.translatable("screen.microcosm.viewer"));
@@ -87,6 +91,13 @@ public class ViewerScreen extends Screen {
                 updateModeButtons();
             }).bounds(px + i * 47, y, 45, 20).build()));
         }
+        viewButton = addRenderableWidget(Button.builder(Component.translatable("screen.microcosm.view_3d"), b -> {
+            iso = !iso;
+            b.setMessage(Component.translatable(iso ? "screen.microcosm.view_2d" : "screen.microcosm.view_3d"));
+        }).bounds(px, top + GRID - 44, PANEL / 2 - 1, 20).build());
+        viewButton.setMessage(Component.translatable(iso ? "screen.microcosm.view_2d" : "screen.microcosm.view_3d"));
+        addRenderableWidget(Button.builder(Component.translatable("screen.microcosm.rotate"), b -> isoView.rotate())
+                .bounds(px + PANEL / 2 + 1, top + GRID - 44, PANEL / 2 - 1, 20).build());
         scanButton = addRenderableWidget(Button.builder(Component.translatable("screen.microcosm.scan"),
                 b -> send(ViewerRequestPayload.simple(ViewerRequestPayload.Op.SCAN))).bounds(px, top + GRID - 20, PANEL, 20).build());
         updateModeButtons();
@@ -127,6 +138,9 @@ public class ViewerScreen extends Screen {
     // ---------------------------------------------------------------- input
 
     private @Nullable BlockPos cellAt(double mouseX, double mouseY) {
+        if (iso) {
+            return null;
+        }
         int x = (int) Math.floor((mouseX - left) / CELL);
         int z = (int) Math.floor((mouseY - top) / CELL);
         return x >= 0 && x < 16 && z >= 0 && z < 16 ? new BlockPos(x, layer, z) : null;
@@ -134,6 +148,19 @@ public class ViewerScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (iso && view.hasRoom() && isInside(event.x(), event.y())) {
+            IsoView.Hit hit = isoView.pick(event.x(), event.y());
+            if (hit != null) {
+                if (event.button() == 1) {
+                    send(new ViewerRequestPayload(ViewerRequestPayload.Op.ZOOM_IN, hit.pos(), 0, 0));
+                } else if (event.button() == 0) {
+                    // Placing goes onto the clicked face; breaking and using act on the block itself.
+                    BlockPos target = mode == DeviceAction.Type.PLACE ? hit.pos().relative(hit.face()) : hit.pos();
+                    send(new ViewerRequestPayload(ViewerRequestPayload.Op.ACTION, target, mode.ordinal(), slot));
+                }
+            }
+            return true;
+        }
         BlockPos local = cellAt(event.x(), event.y());
         if (local != null) {
             if (event.button() == 1) {
@@ -160,6 +187,10 @@ public class ViewerScreen extends Screen {
         return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
+    private boolean isInside(double mouseX, double mouseY) {
+        return mouseX >= left && mouseX < left + GRID && mouseY >= top && mouseY < top + GRID;
+    }
+
     private int slotsTop() {
         return top + 50;
     }
@@ -183,11 +214,41 @@ public class ViewerScreen extends Screen {
         super.extractRenderState(graphics, mouseX, mouseY, partialTick);
         updateModeButtons();
         int titleColor = 0xFFFFFFFF;
-        graphics.text(font, Component.translatable("screen.microcosm.header",
+        graphics.text(font, Component.translatable(iso ? "screen.microcosm.header_3d" : "screen.microcosm.header",
                 Component.translatable("screen.microcosm.tier." + view.viewerTier()), view.depth(), layer), left, top - 12, titleColor);
         graphics.fill(left - 1, top - 1, left + GRID + 1, top + GRID + 1, 0xFF4A6070);
         graphics.fill(left, top, left + GRID, top + GRID, 0xFF0B1418);
-        if (view.hasRoom()) {
+        if (view.hasRoom() && iso) {
+            boolean color = view.viewerTier() == 1;
+            boolean blind = view.viewerTier() >= 3;
+            graphics.enableScissor(left, top, left + GRID, top + GRID);
+            isoView.draw(graphics, this::state, layer, left, top, GRID, color, new IsoView.Painter() {
+                @Override
+                public boolean icon(GuiGraphicsExtractor g, BlockState state, float x, float y, float scale) {
+                    return IsoView.blockIcon(g, state, x, y, scale);
+                }
+
+                @Override
+                public int tint(BlockState state) {
+                    return ViewerScreen.tint(state, color, blind);
+                }
+            });
+            graphics.disableScissor();
+            if (isInside(mouseX, mouseY)) {
+                IsoView.Hit hit = isoView.pick(mouseX, mouseY);
+                if (hit != null) {
+                    BlockState state = state(hit.pos().getX(), hit.pos().getY(), hit.pos().getZ());
+                    List<Component> lines = new ArrayList<>();
+                    lines.add(state.getBlock().getName());
+                    lines.add(Component.literal(hit.pos().getX() + " " + hit.pos().getY() + " " + hit.pos().getZ()
+                            + " · " + hit.face().getSerializedName()).withColor(0xFF808080));
+                    if (state.getBlock() instanceof CellBlock) {
+                        lines.add(Component.translatable("screen.microcosm.zoom_hint").withColor(0xFF70D0E0));
+                    }
+                    graphics.setComponentTooltipForNextFrame(font, lines, mouseX, mouseY);
+                }
+            }
+        } else if (view.hasRoom()) {
             drawLayer(graphics);
         } else {
             Component message = Component.translatable(view.viewerTier() >= 3
@@ -299,6 +360,6 @@ public class ViewerScreen extends Screen {
         if (!view.status().isEmpty()) {
             graphics.text(font, Component.translatable("message.microcosm.status." + view.status()), px, y, 0xFFFF9070);
         }
-        graphics.text(font, Component.translatable("screen.microcosm.help"), left, top + GRID + 4, 0xFF708890);
+        graphics.text(font, Component.translatable(iso ? "screen.microcosm.help_3d" : "screen.microcosm.help"), left, top + GRID + 4, 0xFF708890);
     }
 }

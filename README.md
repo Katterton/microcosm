@@ -33,6 +33,11 @@ Dort werden Gegenstände und ganze Maschinenblöcke über 3D-Rezepte gefertigt, 
 
   - **Bedienung:** Rechtsklick auf den Viewer öffnet die Raumansicht. Linksklick führt den gewählten Modus aus
     (Setzen, Abbauen, Benutzen), Rechtsklick auf eine Zelle zoomt hinein, das Mausrad wechselt die Schicht.
+  - **3D-Ansicht:** Per Knopf lässt sich zwischen Schicht- und isometrischer 3D-Ansicht wechseln, außerdem kann man die
+    Ansicht in 90°-Schritten drehen. Das Mausrad setzt dann die Schnitthöhe: Alles darüber wird ausgeblendet, sodass
+    man in den Raum hineinsieht. Ein Klick trifft die Fläche unter der Maus. Setzen legt den Block auf diese Fläche,
+    Abbauen und Benutzen wirken auf den Block selbst. Stufe 1 zeigt echte Block-Icons, Stufe 2 schattierte
+    Graustufen-Würfel, Stufe 3 cyanfarbene Würfel aus dem letzten Scan.
     Benutzen mit einem Werkzeug löst lokale Fertigungsrezepte aus.
   - **Inventar:** Rechtsklick auf Arm oder Sonde, beim Feldmanipulator Schleichen + Rechtsklick. Trichter und Pipes
     können Items einfüllen, Energie kommt über die normale NeoForge-Energie-Capability.
@@ -97,6 +102,5 @@ echo "eula=true" > run/eula.txt
 
 ## Nächste Schritte
 
-1. 3D-Darstellung im Mikroskop statt Schichtansicht
-2. EMI-Integration
-3. Betreten von Räumen als freischaltbares Late-Game-Feature
+1. EMI-Integration
+2. Betreten von Räumen als freischaltbares Late-Game-Feature

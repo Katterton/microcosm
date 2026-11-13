@@ -78,5 +78,10 @@
   "jei.microcosm.cube": "Cube · level %s · %sx%sx%s",
   "jei.microcosm.layer": "Layer %s/%s",
   "jei.microcosm.any": "Anything",
-  "jei.microcosm.air": "Must be air"
+  "jei.microcosm.air": "Must be air",
+  "screen.microcosm.view_3d": "3D view",
+  "screen.microcosm.view_2d": "Layer view",
+  "screen.microcosm.rotate": "Rotate",
+  "screen.microcosm.header_3d": "%s · level %s · cut at layer %s",
+  "screen.microcosm.help_3d": "Left: action on face · Right: zoom into cell · Wheel: cut height"
 }

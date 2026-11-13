@@ -78,5 +78,10 @@
   "jei.microcosm.cube": "Würfel · Ebene %s · %sx%sx%s",
   "jei.microcosm.layer": "Schicht %s/%s",
   "jei.microcosm.any": "Beliebig",
-  "jei.microcosm.air": "Muss Luft sein"
+  "jei.microcosm.air": "Muss Luft sein",
+  "screen.microcosm.view_3d": "3D-Ansicht",
+  "screen.microcosm.view_2d": "Schichtansicht",
+  "screen.microcosm.rotate": "Drehen",
+  "screen.microcosm.header_3d": "%s · Ebene %s · Schnitt bei Schicht %s",
+  "screen.microcosm.help_3d": "Links: Aktion auf Fläche · Rechts: in Zelle zoomen · Mausrad: Schnitthöhe"
 }
