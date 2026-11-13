@@ -7,7 +7,10 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 description='''
-Nested 16x16x16 sub-dimensions for 3D fabrication and automation.
+Cells that contain a 16x16x16 room one scale level down, nested up to three levels deep.
+Build 3D fabrication patterns inside them with automation from any mod, look into rooms with
+microscopes, work in them remotely with manipulators, connect them through ports, or shrink
+down and enter them in person.
 '''
 
 [[dependencies.${mod_id}]]
@@ -23,3 +26,10 @@ Nested 16x16x16 sub-dimensions for 3D fabrication and automation.
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[29.53,)"
+    ordering="AFTER"
+    side="CLIENT"
