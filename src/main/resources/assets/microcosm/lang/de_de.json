@@ -10,5 +10,8 @@
   "commands.microcosm.not_in_room": "Du bist in keinem Raum.",
   "commands.microcosm.crafted": "Fertigung abgeschlossen.",
   "commands.microcosm.no_match": "Der Raum passt zu keinem Würfelrezept.",
-  "commands.microcosm.info": "Skalenebene: %s | Zelle dieses Raums: %s | Geladene Fertigungsrezepte: %s"
+  "commands.microcosm.info": "Skalenebene: %s | Zelle dieses Raums: %s | Geladene Fertigungsrezepte: %s",
+  "block.microcosm.port": "Zellport",
+  "message.microcosm.port_mode.input": "Port: Redstone fließt in den Raum",
+  "message.microcosm.port_mode.output": "Port: Redstone fließt aus dem Raum"
 }

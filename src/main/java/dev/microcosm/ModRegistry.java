@@ -2,6 +2,7 @@ package dev.microcosm;
 
 import dev.microcosm.block.CellBlock;
 import dev.microcosm.block.CellBlockEntity;
+import dev.microcosm.block.PortBlock;
 import java.util.function.Supplier;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BlockItem;
@@ -31,7 +32,12 @@ public final class ModRegistry {
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1f, 3600000f).noLootTable()
                     .pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, pos, type) -> false));
 
+    /** Connects a room side to the matching side of its cell (capabilities and redstone). */
+    public static final DeferredBlock<PortBlock> PORT = BLOCKS.registerBlock("port", PortBlock::new,
+            p -> p.mapColor(MapColor.COLOR_LIGHT_BLUE).strength(2.0f, 6f).pushReaction(PushReaction.BLOCK));
+
     public static final DeferredItem<BlockItem> CELL_ITEM = ITEMS.registerSimpleBlockItem("cell", CELL);
+    public static final DeferredItem<BlockItem> PORT_ITEM = ITEMS.registerSimpleBlockItem("port", PORT);
 
     /** Example fabrication tool used by local recipes. */
     public static final DeferredItem<Item> MICRO_SOLDERING_IRON = ITEMS.registerItem("micro_soldering_iron", Item::new,

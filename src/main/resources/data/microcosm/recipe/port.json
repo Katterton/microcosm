@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "R": "minecraft:redstone",
+    "H": "minecraft:hopper",
+    "E": "minecraft:ender_pearl"
+  },
+  "pattern": [
+    "CRC",
+    "HEH",
+    "CRC"
+  ],
+  "result": {
+    "id": "microcosm:port",
+    "count": 2
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "microcosm:block/port_output",
+    "north": "microcosm:block/port_back",
+    "south": "microcosm:block/port_output",
+    "east": "microcosm:block/port_output",
+    "west": "microcosm:block/port_output",
+    "up": "microcosm:block/port_output",
+    "down": "microcosm:block/port_output"
+  }
+}

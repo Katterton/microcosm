@@ -16,5 +16,4 @@ execute in microcosm:level_1 run setblock 49 2 1 minecraft:stone
 microcosm check 3 64 0
 execute if block 3 64 0 minecraft:beacon run say PASS structure_cube_crafted
 execute unless block 3 64 0 minecraft:beacon run say FAIL structure_cube_crafted
-say TEST_DONE
-stop
+schedule function mctest:ports 5t

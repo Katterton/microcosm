@@ -12,6 +12,15 @@ Dort werden Gegenstände und ganze Maschinenblöcke über 3D-Rezepte gefertigt, 
   Alle anderen Seiten sind mit unzerstörbaren `microcosm:cell_wall` abgeschlossen.
 - **Chunk-Loading als Kette:** Ein Raum ist geladen, solange seine Zelle geladen ist.
 - **Abbauschutz:** Spieler können eine Zelle nicht abbauen, solange ihr Raum nicht leer ist.
+- **Zellport** (`microcosm:port`): Wird im Raum an eine Wand gesetzt und verbindet diese Raumseite mit derselben
+  Seite der Zelle eine Ebene höher. Pro Seite ist ein Port aktiv.
+  - **Capabilities in beide Richtungen** (Items, Flüssigkeiten, Energie): Von außen erreicht man über die Zellseite
+    den Block hinter dem Port im Raum, von innen über den Port den Block neben der Zellseite. Das funktioniert mit
+    jeder Mod, die die NeoForge-Capabilities nutzt (Pipes, Trichter, AE2, Mekanism, ...). Weitere Capabilities lassen
+    sich in `Microcosm.registerCapabilities` ergänzen.
+  - **Redstone in eine Richtung**, umschaltbar per Rechtsklick: `input` (grün) leitet das Signal von außen in den Raum,
+    `output` (orange) vom Raum nach außen. Jede Grenze kostet 1 Tick.
+  - Seiten mit Port lösen keine Würfelrezept-Prüfung aus, nur Seiten ohne Port.
 - **3D-Fertigungsrezepte** (Datapack, `/reload`-fähig): lokale Rezepte mit Werkzeug und Würfelrezepte.
 - **Debug-Befehle** (OP): `/microcosm enter [pos]`, `/microcosm exit`, `/microcosm check [pos]`, `/microcosm info`.
   Das Betreten ist vorerst nur per Befehl möglich, bis Mikroskop und Manipulator existieren.
@@ -60,8 +69,7 @@ echo "eula=true" > run/eula.txt
 
 ## Nächste Schritte
 
-1. Ports (Items, Flüssigkeiten, Energie, Redstone) zwischen Raum und Ebene darüber
-2. Mikroskop: synchronisierte Spiegelung des Raums auf dem Client plus Rendering
-3. Manipulator: Platzieren und Abbauen aus der Ferne
-4. Elektronenmikroskop + Sonde (Level 2), Feldmanipulator (Level 3)
-5. JEI/EMI mit 3D-Ansicht, KubeJS-Unterstützung, Config
+1. Mikroskop: synchronisierte Spiegelung des Raums auf dem Client plus Rendering
+2. Manipulator: Platzieren und Abbauen aus der Ferne
+3. Elektronenmikroskop + Sonde (Level 2), Feldmanipulator (Level 3)
+4. JEI/EMI mit 3D-Ansicht, KubeJS-Unterstützung, Config

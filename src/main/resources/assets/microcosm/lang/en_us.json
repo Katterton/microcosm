@@ -10,5 +10,8 @@
   "commands.microcosm.not_in_room": "You are not inside a room.",
   "commands.microcosm.crafted": "Fabrication complete.",
   "commands.microcosm.no_match": "The room does not match any cube recipe.",
-  "commands.microcosm.info": "Scale level: %s | Cell of this room: %s | Fabrication recipes loaded: %s"
+  "commands.microcosm.info": "Scale level: %s | Cell of this room: %s | Fabrication recipes loaded: %s",
+  "block.microcosm.port": "Cell Port",
+  "message.microcosm.port_mode.input": "Port: redstone flows into the room",
+  "message.microcosm.port_mode.output": "Port: redstone flows out of the room"
 }
