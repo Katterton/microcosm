@@ -108,4 +108,5 @@ echo "eula=true" > run/eula.txt
 
 ## Nächste Schritte
 
-1. EMI-Integration
+1. EMI-Integration, sobald es eine offizielle EMI-Version für 26.1 gibt (Stand jetzt: offizielles Maven nur bis
+   1.21.1, für 26.1 gibt es nur den inoffiziellen Port „SEMI“)
