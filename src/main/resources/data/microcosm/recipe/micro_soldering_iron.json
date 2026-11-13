@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "S": "minecraft:stick",
+    "R": "minecraft:redstone"
+  },
+  "pattern": ["  C", " R ", "S  "],
+  "result": { "id": "microcosm:micro_soldering_iron" }
+}

@@ -1,0 +1,6 @@
+{
+  "mode": "cube",
+  "scale": 1,
+  "structure": "microcosm:fabrication/beacon_core",
+  "result": { "id": "minecraft:beacon" }
+}

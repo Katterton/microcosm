@@ -1,0 +1,14 @@
+{
+  "block.microcosm.cell": "Microcosm Cell",
+  "block.microcosm.cell_wall": "Cell Wall",
+  "item.microcosm.micro_soldering_iron": "Micro Soldering Iron",
+  "item.microcosm.logic_chip": "Logic Chip",
+  "message.microcosm.room_not_empty": "This cell's room is not empty.",
+  "commands.microcosm.not_a_cell": "That block is not a microcosm cell.",
+  "commands.microcosm.deepest_level": "This is the deepest level, the cell has no room.",
+  "commands.microcosm.entered": "Entered a room on scale level %s.",
+  "commands.microcosm.not_in_room": "You are not inside a room.",
+  "commands.microcosm.crafted": "Fabrication complete.",
+  "commands.microcosm.no_match": "The room does not match any cube recipe.",
+  "commands.microcosm.info": "Scale level: %s | Cell of this room: %s | Fabrication recipes loaded: %s"
+}

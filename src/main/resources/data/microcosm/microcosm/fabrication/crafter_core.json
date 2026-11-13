@@ -1,0 +1,14 @@
+{
+  "mode": "cube",
+  "scale": 1,
+  "default": ".",
+  "key": {
+    "I": "#c:storage_blocks/iron",
+    "R": "minecraft:redstone_block"
+  },
+  "fill": [
+    { "from": [0, 0, 0], "to": [15, 0, 15], "key": "I" },
+    { "from": [7, 1, 7], "to": [8, 2, 8], "key": "R" }
+  ],
+  "result": { "id": "minecraft:crafter" }
+}

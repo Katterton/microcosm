@@ -1,0 +1,6 @@
+{
+  "variants": {
+    "powered=false": { "model": "microcosm:block/cell" },
+    "powered=true": { "model": "microcosm:block/cell_powered" }
+  }
+}

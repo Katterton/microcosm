@@ -1,0 +1,17 @@
+{
+  "mode": "local",
+  "scale": [1, 2, 3],
+  "pattern": [
+    ["CRC",
+     "RGR",
+     "CRC"]
+  ],
+  "key": {
+    "C": "minecraft:copper_block",
+    "R": "minecraft:redstone_wire",
+    "G": "minecraft:gold_block"
+  },
+  "tool": "microcosm:micro_soldering_iron",
+  "tool_damage": 1,
+  "result": { "id": "microcosm:logic_chip", "count": 4 }
+}

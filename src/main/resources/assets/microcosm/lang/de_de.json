@@ -1,0 +1,14 @@
+{
+  "block.microcosm.cell": "Mikrokosmos-Zelle",
+  "block.microcosm.cell_wall": "Zellwand",
+  "item.microcosm.micro_soldering_iron": "Mikro-Lötkolben",
+  "item.microcosm.logic_chip": "Logikchip",
+  "message.microcosm.room_not_empty": "Der Raum dieser Zelle ist nicht leer.",
+  "commands.microcosm.not_a_cell": "Dieser Block ist keine Mikrokosmos-Zelle.",
+  "commands.microcosm.deepest_level": "Das ist die tiefste Ebene, die Zelle hat keinen Raum.",
+  "commands.microcosm.entered": "Raum auf Skalenebene %s betreten.",
+  "commands.microcosm.not_in_room": "Du bist in keinem Raum.",
+  "commands.microcosm.crafted": "Fertigung abgeschlossen.",
+  "commands.microcosm.no_match": "Der Raum passt zu keinem Würfelrezept.",
+  "commands.microcosm.info": "Skalenebene: %s | Zelle dieses Raums: %s | Geladene Fertigungsrezepte: %s"
+}

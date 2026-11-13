@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "#": "minecraft:iron_ingot",
+    "G": "minecraft:tinted_glass",
+    "E": "minecraft:ender_pearl",
+    "R": "minecraft:redstone"
+  },
+  "pattern": ["#G#", "GEG", "#R#"],
+  "result": { "id": "microcosm:cell" }
+}

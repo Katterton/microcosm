@@ -1,0 +1,53 @@
+package dev.microcosm;
+
+import dev.microcosm.block.CellBlock;
+import dev.microcosm.block.CellBlockEntity;
+import java.util.function.Supplier;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredBlock;
+import net.neoforged.neoforge.registries.DeferredItem;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+public final class ModRegistry {
+    private static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(Microcosm.MODID);
+    private static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Microcosm.MODID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Microcosm.MODID);
+
+    /** A block that holds a 16x16x16 room one scale level down. */
+    public static final DeferredBlock<CellBlock> CELL = BLOCKS.registerBlock("cell", CellBlock::new,
+            p -> p.mapColor(MapColor.COLOR_CYAN).strength(3.5f, 1200f).pushReaction(PushReaction.BLOCK));
+
+    /** Unbreakable boundary between a room and empty space. Not obtainable. */
+    public static final DeferredBlock<Block> CELL_WALL = BLOCKS.registerSimpleBlock("cell_wall",
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1f, 3600000f).noLootTable()
+                    .pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, pos, type) -> false));
+
+    public static final DeferredItem<BlockItem> CELL_ITEM = ITEMS.registerSimpleBlockItem("cell", CELL);
+
+    /** Example fabrication tool used by local recipes. */
+    public static final DeferredItem<Item> MICRO_SOLDERING_IRON = ITEMS.registerItem("micro_soldering_iron", Item::new,
+            p -> p.durability(128));
+
+    /** Example fabrication product. */
+    public static final DeferredItem<Item> LOGIC_CHIP = ITEMS.registerSimpleItem("logic_chip");
+
+    public static final Supplier<BlockEntityType<CellBlockEntity>> CELL_BLOCK_ENTITY = BLOCK_ENTITIES.register("cell",
+            () -> new BlockEntityType<>(CellBlockEntity::new, CELL.get()));
+
+    private ModRegistry() {}
+
+    static void register(IEventBus modBus) {
+        BLOCKS.register(modBus);
+        ITEMS.register(modBus);
+        BLOCK_ENTITIES.register(modBus);
+    }
+}
