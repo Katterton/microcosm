@@ -23,6 +23,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ShiftManager;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -72,7 +73,10 @@ public class Microcosm {
             RecipeSyncPayload payload = new RecipeSyncPayload(RecipeDisplay.all(e.getPlayerList().getServer()));
             e.getRelevantPlayers().forEach(player -> PacketDistributor.sendToPlayer(player, payload));
         });
-        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> ViewerSessions.onServerTick(e.getServer()));
+        NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> {
+            ViewerSessions.onServerTick(e.getServer());
+            ShiftManager.onServerTick(e.getServer());
+        });
     }
 
     /** Ports tunnel these capabilities; add more here to tunnel them too. */
@@ -98,6 +102,7 @@ public class Microcosm {
             ModRegistry.DEVICE_ITEMS.values().forEach(item -> event.accept(item.get()));
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModRegistry.MICRO_SOLDERING_IRON.get());
+            event.accept(ModRegistry.SIZE_SHIFTER.get());
         } else if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
             event.accept(ModRegistry.LOGIC_CHIP.get());
             event.accept(ModRegistry.NANO_LENS.get());
@@ -118,7 +123,7 @@ public class Microcosm {
     /** A cell whose room still contains blocks cannot be broken by players, so nothing inside is lost. */
     private static void onBreak(BreakBlockEvent event) {
         if (event.getState().getBlock() instanceof CellBlock && event.getLevel() instanceof ServerLevel level
-                && !RoomManager.isRoomEmpty(level, event.getPos())) {
+                && (!RoomManager.isRoomEmpty(level, event.getPos()) || ShiftManager.hasPlayersInside(level, event.getPos()))) {
             event.setCanceled(true);
             event.getPlayer().sendOverlayMessage(Component.translatable("message.microcosm.room_not_empty"));
         }

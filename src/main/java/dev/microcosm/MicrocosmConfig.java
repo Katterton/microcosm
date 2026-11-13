@@ -9,6 +9,10 @@ public final class MicrocosmConfig {
     public static final ModConfigSpec.BooleanValue ALLOW_PLAYER_PLACEMENT_IN_ROOMS;
     public static final ModConfigSpec.IntValue MAX_QUEUED_ACTIONS;
 
+    public static final ModConfigSpec.BooleanValue ENTERING_ENABLED;
+    public static final ModConfigSpec.IntValue ENTERING_MAX_DEPTH;
+    public static final ModConfigSpec.IntValue ENTERING_COOLDOWN;
+
     public static final Tier TIER_1;
     public static final Tier TIER_2;
     public static final Tier TIER_3;
@@ -55,6 +59,14 @@ public final class MicrocosmConfig {
                 .define("allow_player_placement_in_rooms", true);
         MAX_QUEUED_ACTIONS = b.comment("Maximum number of queued actions per manipulator")
                 .defineInRange("max_queued_actions", 64, 1, 4096);
+        b.pop();
+        b.comment("Entering rooms in person with the size shifter").push("entering");
+        ENTERING_ENABLED = b.comment("Whether the size shifter can be used at all")
+                .define("enabled", true);
+        ENTERING_MAX_DEPTH = b.comment("Deepest scale level players may enter (1-3)")
+                .defineInRange("max_depth", 3, 1, 3);
+        ENTERING_COOLDOWN = b.comment("Cooldown of the size shifter in ticks")
+                .defineInRange("cooldown_ticks", 40, 0, 72000);
         b.pop();
         TIER_1 = new Tier(b, "tier_1", "Optical microscope and manipulator arm (scale level 1)",
                 10, 0, 10, 0, 0);

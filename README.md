@@ -45,6 +45,12 @@ Dort werden Gegenstände und ganze Maschinenblöcke über 3D-Rezepte gefertigt, 
     brauchen Nanolinsen, der Feldmanipulator Quantengitter.
   - Alle Zeiten, Energiekosten und Puffergrößen stehen in `serverconfig/microcosm-server.toml`. Dort lässt sich auch
     verbieten, dass Spieler in Räumen von Hand bauen.
+- **Größenwandler** (`microcosm:size_shifter`, Late Game: braucht Quantengitter, Nanolinsen und einen Netherstern):
+  Rechtsklick auf eine Zelle lässt dich schrumpfen und bringt dich in ihren Raum, auf einen freien Platz möglichst
+  mittig am Boden. Schleichen + Rechtsklick im Raum bringt dich wachsend zurück neben die Zelle. Das funktioniert auch
+  verschachtelt bis Ebene 3. Solange ein Spieler im Raum ist, lässt sich die Zelle nicht abbauen. In der Config
+  (`[entering]`) lassen sich das Betreten abschalten, die maximale Tiefe und der Cooldown einstellen. Das Rezept
+  kann wie jedes andere per Datapack oder KubeJS ersetzt werden.
 - **3D-Fertigungsrezepte** (Datapack, `/reload`-fähig): lokale Rezepte mit Werkzeug und Würfelrezepte.
 - **Debug-Befehle** (OP): `/microcosm enter [pos]`, `/microcosm exit`, `/microcosm check [pos]`, `/microcosm info`,
   `/microcosm act <manipulator> <place|break|use> <slot> <x> <y> <z> ["x y z;..." verschachtelte Zellen]`.
@@ -103,4 +109,3 @@ echo "eula=true" > run/eula.txt
 ## Nächste Schritte
 
 1. EMI-Integration
-2. Betreten von Räumen als freischaltbares Late-Game-Feature

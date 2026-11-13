@@ -4,6 +4,7 @@ import dev.microcosm.block.CellBlock;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ShiftManager;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -119,7 +120,8 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
             return Result.NO_EFFECT;
         }
         if (state.getDestroySpeed(level, target) < 0
-                || (state.getBlock() instanceof CellBlock && !RoomManager.isRoomEmpty(level, target))) {
+                || (state.getBlock() instanceof CellBlock && (!RoomManager.isRoomEmpty(level, target)
+                        || ShiftManager.hasPlayersInside(level, target)))) {
             return Result.UNBREAKABLE;
         }
         BlockEntity blockEntity = level.getBlockEntity(target);

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "microcosm:nano_lens",
+    "Q": "microcosm:quantum_lattice",
+    "E": "minecraft:ender_pearl",
+    "C": "microcosm:cell",
+    "N": "minecraft:nether_star"
+  },
+  "pattern": [
+    "LQL",
+    "ECE",
+    "LNL"
+  ],
+  "result": {
+    "id": "microcosm:size_shifter"
+  }
+}

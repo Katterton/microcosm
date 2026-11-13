@@ -83,5 +83,13 @@
   "screen.microcosm.view_2d": "Layer view",
   "screen.microcosm.rotate": "Rotate",
   "screen.microcosm.header_3d": "%s · level %s · cut at layer %s",
-  "screen.microcosm.help_3d": "Left: action on face · Right: zoom into cell · Wheel: cut height"
+  "screen.microcosm.help_3d": "Left: action on face · Right: zoom into cell · Wheel: cut height",
+  "item.microcosm.size_shifter": "Size Shifter",
+  "message.microcosm.shift.disabled": "Entering rooms is disabled on this server.",
+  "message.microcosm.shift.busy": "Already shifting...",
+  "message.microcosm.shift.too_deep": "You cannot shrink any further here.",
+  "message.microcosm.shift.room_full": "There is no space in that room.",
+  "message.microcosm.shift.not_in_room": "You are not inside a room.",
+  "message.microcosm.shift.entered": "Scale level %s",
+  "message.microcosm.shift.left": "Back on scale level %s"
 }

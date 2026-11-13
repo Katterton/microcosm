@@ -14,6 +14,7 @@ import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ShiftManager;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -131,7 +132,8 @@ public final class MicrocosmCommands {
             source.sendFailure(Component.translatable("commands.microcosm.deepest_level"));
             return 0;
         }
-        Vec3 target = Vec3.atBottomCenterOf(room.spawnPoint());
+        BlockPos spot = ShiftManager.findSpotInRoom(room);
+        Vec3 target = Vec3.atBottomCenterOf(spot != null ? spot : room.spawnPoint());
         player.teleport(new TeleportTransition(room.level(), target, Vec3.ZERO, player.getYRot(), player.getXRot(),
                 Set.of(), TeleportTransition.DO_NOTHING));
         source.sendSuccess(() -> Component.translatable("commands.microcosm.entered",

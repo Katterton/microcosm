@@ -6,6 +6,8 @@ import dev.microcosm.block.PortBlock;
 import dev.microcosm.device.DeviceBlock;
 import dev.microcosm.device.DeviceBlockEntity;
 import dev.microcosm.device.DeviceKind;
+import dev.microcosm.item.SizeShifterItem;
+import net.minecraft.world.item.Rarity;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -60,6 +62,10 @@ public final class ModRegistry {
     /** Example fabrication tool used by local recipes. */
     public static final DeferredItem<Item> MICRO_SOLDERING_IRON = ITEMS.registerItem("micro_soldering_iron", Item::new,
             p -> p.durability(128));
+
+    /** Late-game item to enter rooms in person. */
+    public static final DeferredItem<SizeShifterItem> SIZE_SHIFTER = ITEMS.registerItem("size_shifter", SizeShifterItem::new,
+            p -> p.durability(256).rarity(Rarity.EPIC));
 
     /** Example fabrication product. */
     public static final DeferredItem<Item> LOGIC_CHIP = ITEMS.registerSimpleItem("logic_chip");

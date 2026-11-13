@@ -83,5 +83,13 @@
   "screen.microcosm.view_2d": "Schichtansicht",
   "screen.microcosm.rotate": "Drehen",
   "screen.microcosm.header_3d": "%s · Ebene %s · Schnitt bei Schicht %s",
-  "screen.microcosm.help_3d": "Links: Aktion auf Fläche · Rechts: in Zelle zoomen · Mausrad: Schnitthöhe"
+  "screen.microcosm.help_3d": "Links: Aktion auf Fläche · Rechts: in Zelle zoomen · Mausrad: Schnitthöhe",
+  "item.microcosm.size_shifter": "Größenwandler",
+  "message.microcosm.shift.disabled": "Das Betreten von Räumen ist auf diesem Server deaktiviert.",
+  "message.microcosm.shift.busy": "Größenwechsel läuft bereits...",
+  "message.microcosm.shift.too_deep": "Hier kannst du nicht weiter schrumpfen.",
+  "message.microcosm.shift.room_full": "In diesem Raum ist kein Platz.",
+  "message.microcosm.shift.not_in_room": "Du bist in keinem Raum.",
+  "message.microcosm.shift.entered": "Skalenebene %s",
+  "message.microcosm.shift.left": "Zurück auf Skalenebene %s"
 }
