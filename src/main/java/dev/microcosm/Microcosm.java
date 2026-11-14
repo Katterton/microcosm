@@ -13,7 +13,11 @@ import dev.microcosm.network.ViewPayload;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 import dev.microcosm.network.ViewerRequestPayload;
+import dev.microcosm.world.ItemScales;
 import dev.microcosm.world.MicrocosmLevels;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import dev.microcosm.world.PortLinks;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -24,6 +28,7 @@ import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
+import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import dev.microcosm.world.RoomManager;
 import dev.microcosm.world.ShiftManager;
 import net.minecraft.core.Direction;
@@ -69,6 +74,7 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(RegisterCommandsEvent.class, e -> MicrocosmCommands.register(e.getDispatcher()));
         NeoForge.EVENT_BUS.addListener(AddServerReloadListenersEvent.class,
                 e -> e.addListener(id("fabrication_recipes"), new FabricationRecipes()));
+        NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, Microcosm::onPlaceScaled);
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
         NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
@@ -90,6 +96,8 @@ public class Microcosm {
         tunnel(event, Capabilities.Energy.BLOCK);
         event.registerBlockEntity(Capabilities.Item.BLOCK, ModRegistry.DEVICE_BLOCK_ENTITY.get(),
                 (device, side) -> device.kind().hasInventory ? VanillaContainerWrapper.of(device) : null);
+        event.registerBlockEntity(Capabilities.Item.BLOCK, ModRegistry.SCALE_CONVERTER_BLOCK_ENTITY.get(),
+                (converter, side) -> new WorldlyContainerWrapper(converter, side));
         event.registerBlockEntity(Capabilities.Energy.BLOCK, ModRegistry.DEVICE_BLOCK_ENTITY.get(),
                 (device, side) -> device.energy());
     }
@@ -101,8 +109,8 @@ public class Microcosm {
 
     private static void addToTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.FUNCTIONAL_BLOCKS) {
-            event.accept(ModRegistry.CELL_ITEM.get());
             event.accept(ModRegistry.PORT_ITEM.get());
+            event.accept(ModRegistry.SCALE_CONVERTER_ITEM.get());
             ModRegistry.DEVICE_ITEMS.values().forEach(item -> event.accept(item.get()));
         } else if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(ModRegistry.MICRO_SOLDERING_IRON.get());
@@ -111,6 +119,20 @@ public class Microcosm {
             event.accept(ModRegistry.LOGIC_CHIP.get());
             event.accept(ModRegistry.NANO_LENS.get());
             event.accept(ModRegistry.QUANTUM_LATTICE.get());
+        }
+    }
+
+    /** Block items can only be placed at their own scale: a normal block does not fit into a Milliblock room. */
+    private static void onPlaceScaled(PlayerInteractEvent.RightClickBlock event) {
+        ItemStack stack = event.getItemStack();
+        int depth = MicrocosmLevels.depth(event.getLevel());
+        if (stack.getItem() instanceof BlockItem && !ItemScales.fits(stack, depth)) {
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.FAIL);
+            if (!event.getLevel().isClientSide()) {
+                event.getEntity().sendOverlayMessage(Component.translatable("message.microcosm.wrong_scale",
+                        MicrocosmLevels.scaleName(ItemScales.scaleOf(stack, depth)), MicrocosmLevels.scaleName(depth)));
+            }
         }
     }
 

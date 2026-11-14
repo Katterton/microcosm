@@ -5,7 +5,7 @@
     "L": "microcosm:nano_lens",
     "Q": "microcosm:quantum_lattice",
     "E": "minecraft:ender_pearl",
-    "C": "microcosm:cell",
+    "C": "microcosm:optical_microscope",
     "N": "minecraft:nether_star"
   },
   "pattern": [

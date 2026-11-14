@@ -49,7 +49,7 @@ public class FabricationCategory implements IRecipeCategory<RecipeDisplay> {
     private final IDrawable arrow;
 
     public FabricationCategory(IGuiHelper guiHelper) {
-        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModRegistry.CELL_ITEM.get()));
+        this.icon = guiHelper.createDrawableItemStack(new ItemStack(ModRegistry.DEVICE_ITEMS.get(dev.microcosm.device.DeviceKind.OPTICAL_MICROSCOPE).get()));
         this.arrow = guiHelper.getRecipeArrow();
     }
 
@@ -108,7 +108,7 @@ public class FabricationCategory implements IRecipeCategory<RecipeDisplay> {
         if (!recipe.tools().isEmpty()) {
             builder.addInputSlot(PANEL_X, bottom).setStandardSlotBackground().addItemStacks(recipe.tools());
         } else {
-            builder.addInputSlot(PANEL_X, bottom).setStandardSlotBackground().add(new ItemStack(ModRegistry.CELL_ITEM.get()));
+            builder.addInputSlot(PANEL_X, bottom).setStandardSlotBackground().add(new ItemStack(ModRegistry.DEVICE_ITEMS.get(dev.microcosm.device.DeviceKind.OPTICAL_MICROSCOPE).get()));
         }
         builder.addOutputSlot(PANEL_X + 54, bottom).setOutputSlotBackground().add(recipe.result());
     }

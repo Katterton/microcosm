@@ -4,6 +4,7 @@ import dev.microcosm.block.CellBlock;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ItemScales;
 import dev.microcosm.world.ShiftManager;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -49,6 +50,7 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
         NO_ENERGY,
         QUEUE_FULL,
         NO_ACTUATOR,
+        WRONG_SCALE,
         QUEUED
     }
 
@@ -61,36 +63,46 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
             return Result.TOO_DEEP;
         }
         ServerLevel level = room.level();
+        int deviceDepth = MicrocosmLevels.depth(deviceLevel);
+        int roomDepth = MicrocosmLevels.depth(level);
         BlockPos target = room.origin().offset(local);
         FakePlayer player = FakePlayerFactory.getMinecraft(level);
         player.setPos(Vec3.atCenterOf(target.above()));
         BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(target), Direction.UP, target, false);
         return switch (type) {
-            case BREAK -> breakBlock(level, target, actuator);
+            case BREAK -> breakBlock(level, target, actuator, roomDepth, deviceDepth);
             case PLACE -> {
                 ItemStack stack = actuator.getItem(slot);
                 if (stack.isEmpty()) {
                     yield Result.NOTHING_TO_PLACE;
                 }
                 if (!(stack.getItem() instanceof BlockItem blockItem)) {
-                    yield use(level, target, actuator, player, hit);
+                    yield use(level, target, actuator, player, hit, deviceDepth, roomDepth);
+                }
+                // Only material of the room's own scale fits: a normal gold block is 16 times too big for a room.
+                if (ItemScales.scaleOf(stack, deviceDepth) != roomDepth) {
+                    yield Result.WRONG_SCALE;
                 }
                 if (!level.getBlockState(target).canBeReplaced()) {
                     yield Result.BLOCKED;
                 }
-                player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+                player.setItemInHand(InteractionHand.MAIN_HAND, ItemScales.move(stack, deviceDepth, roomDepth));
                 InteractionResult result = blockItem.place(
                         new BlockPlaceContext(level, player, InteractionHand.MAIN_HAND, stack, hit));
-                takeBack(actuator, player);
+                takeBack(actuator, player, roomDepth, deviceDepth);
                 yield result.consumesAction() ? Result.DONE : Result.BLOCKED;
             }
-            case USE -> use(level, target, actuator, player, hit);
+            case USE -> use(level, target, actuator, player, hit, deviceDepth, roomDepth);
         };
     }
 
-    private Result use(ServerLevel level, BlockPos target, DeviceBlockEntity actuator, FakePlayer player, BlockHitResult hit) {
+    private Result use(ServerLevel level, BlockPos target, DeviceBlockEntity actuator, FakePlayer player, BlockHitResult hit,
+                       int deviceDepth, int roomDepth) {
         ItemStack stack = actuator.getItem(slot);
-        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        if (stack.getItem() instanceof BlockItem && ItemScales.scaleOf(stack, deviceDepth) != roomDepth) {
+            return Result.WRONG_SCALE;
+        }
+        player.setItemInHand(InteractionHand.MAIN_HAND, ItemScales.move(stack, deviceDepth, roomDepth));
         try {
             if (!stack.isEmpty() && FabricationHandler.tryLocal(level, target, stack, player, InteractionHand.MAIN_HAND)) {
                 return Result.DONE;
@@ -104,17 +116,17 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
             }
             return result.consumesAction() ? Result.DONE : Result.NO_EFFECT;
         } finally {
-            takeBack(actuator, player);
+            takeBack(actuator, player, roomDepth, deviceDepth);
         }
     }
 
     /** Whatever is left in the fake player's hand goes back into the slot it came from. */
-    private void takeBack(DeviceBlockEntity actuator, FakePlayer player) {
-        actuator.setItem(slot, player.getMainHandItem());
+    private void takeBack(DeviceBlockEntity actuator, FakePlayer player, int roomDepth, int deviceDepth) {
+        actuator.setItem(slot, ItemScales.move(player.getMainHandItem(), roomDepth, deviceDepth));
         player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
     }
 
-    private static Result breakBlock(ServerLevel level, BlockPos target, DeviceBlockEntity actuator) {
+    private static Result breakBlock(ServerLevel level, BlockPos target, DeviceBlockEntity actuator, int roomDepth, int deviceDepth) {
         BlockState state = level.getBlockState(target);
         if (state.isAir()) {
             return Result.NO_EFFECT;
@@ -126,9 +138,10 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
         }
         BlockEntity blockEntity = level.getBlockEntity(target);
         for (ItemStack drop : Block.getDrops(state, level, target, blockEntity)) {
-            ItemStack rest = actuator.insert(drop);
+            // Drops are microblocks of the room's scale; they keep that scale in the manipulator.
+            ItemStack rest = actuator.insert(ItemScales.move(drop, roomDepth, deviceDepth));
             if (!rest.isEmpty()) {
-                Block.popResource(level, target, rest);
+                Block.popResource(level, target, ItemScales.move(rest, deviceDepth, roomDepth));
             }
         }
         level.destroyBlock(target, false);

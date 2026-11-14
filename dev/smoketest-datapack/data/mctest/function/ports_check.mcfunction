@@ -1,6 +1,10 @@
 execute in microcosm:level_1 if block 133 14 133 minecraft:chest{Items:[{id:"minecraft:diamond"}]} run say PASS items_into_room
 execute in microcosm:level_1 unless block 133 14 133 minecraft:chest{Items:[{id:"minecraft:diamond"}]} run say FAIL items_into_room
 execute if block 8 63 8 minecraft:chest{Items:[{id:"minecraft:emerald"}]} run say PASS items_out_of_room
+execute if block 8 63 8 minecraft:chest{Items:[{id:"minecraft:emerald",components:{"microcosm:scale":1}}]} run say PASS items_out_keep_milliblock_scale
+execute unless block 8 63 8 minecraft:chest{Items:[{id:"minecraft:emerald",components:{"microcosm:scale":1}}]} run say FAIL items_out_keep_milliblock_scale
+execute in microcosm:level_1 if block 133 14 133 minecraft:chest{Items:[{id:"minecraft:diamond",components:{"microcosm:scale":0}}]} run say PASS items_in_keep_block_scale
+execute in microcosm:level_1 unless block 133 14 133 minecraft:chest{Items:[{id:"minecraft:diamond",components:{"microcosm:scale":0}}]} run say FAIL items_in_keep_block_scale
 execute unless block 8 63 8 minecraft:chest{Items:[{id:"minecraft:emerald"}]} run say FAIL items_out_of_room
 execute in microcosm:level_1 if block 142 5 133 minecraft:redstone_lamp[lit=true] run say PASS redstone_into_room
 execute in microcosm:level_1 unless block 142 5 133 minecraft:redstone_lamp[lit=true] run say FAIL redstone_into_room

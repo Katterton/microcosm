@@ -62,9 +62,9 @@ public final class ShiftManager {
         if (depth > MicrocosmConfig.ENTERING_MAX_DEPTH.getAsInt()) {
             return "message.microcosm.shift.too_deep";
         }
-        RoomManager.Room room = RoomManager.roomOf(level, cellPos, true);
+        RoomManager.Room room = MicroBlocks.open(level, cellPos);
         if (room == null) {
-            return "message.microcosm.shift.too_deep";
+            return "message.microcosm.shift.indivisible";
         }
         BlockPos spot = findSpotInRoom(room);
         if (spot == null) {
@@ -130,6 +130,15 @@ public final class ShiftManager {
     }
 
     private static void teleport(ServerPlayer player, ServerLevel level, Vec3 pos) {
+        // Everything the player carries shrinks or grows with them: items keep their absolute scale.
+        int from = MicrocosmLevels.depth(player.level());
+        int to = MicrocosmLevels.depth(level);
+        if (from != to) {
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemScales.move(player.getInventory().getItem(i), from, to);
+            }
+            player.getInventory().setChanged();
+        }
         player.teleport(new TeleportTransition(level, pos, Vec3.ZERO, player.getYRot(), player.getXRot(),
                 Set.of(), TeleportTransition.DO_NOTHING));
         player.resetFallDistance();

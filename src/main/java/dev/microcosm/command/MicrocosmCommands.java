@@ -13,6 +13,7 @@ import java.util.List;
 import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.world.MicrocosmLevels;
+import dev.microcosm.world.MicroBlocks;
 import dev.microcosm.world.RoomManager;
 import dev.microcosm.world.ShiftManager;
 import java.util.Set;
@@ -78,7 +79,7 @@ public final class MicrocosmCommands {
             source.sendFailure(Component.translatable("commands.microcosm.not_an_actuator"));
             return 0;
         }
-        BlockPos root = RoomPath.adjacentCell(level, actuatorPos);
+        BlockPos root = RoomPath.actuatorTarget(level, actuatorPos);
         if (root == null) {
             source.sendFailure(Component.translatable("message.microcosm.no_cell"));
             return 0;
@@ -123,11 +124,7 @@ public final class MicrocosmCommands {
     private static int enter(CommandSourceStack source, BlockPos pos) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         ServerLevel level = source.getLevel();
-        if (!(level.getBlockState(pos).getBlock() instanceof CellBlock)) {
-            source.sendFailure(Component.translatable("commands.microcosm.not_a_cell"));
-            return 0;
-        }
-        RoomManager.Room room = RoomManager.roomOf(level, pos, true);
+        RoomManager.Room room = MicroBlocks.open(level, pos);
         if (room == null) {
             source.sendFailure(Component.translatable("commands.microcosm.deepest_level"));
             return 0;

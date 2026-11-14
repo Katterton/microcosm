@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "mode=shrink": {
+      "model": "microcosm:block/scale_converter_shrink"
+    },
+    "mode=grow": {
+      "model": "microcosm:block/scale_converter_grow"
+    }
+  }
+}

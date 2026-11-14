@@ -10,6 +10,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.block.Block;
+import dev.microcosm.world.MicroBlocks;
 import dev.microcosm.world.RoomManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,6 +43,8 @@ public class CellBlockEntity extends BlockEntity {
     private int previewVersion;
     /** Walls from older versions have no connections yet; they are fixed once per load. */
     private boolean wallsRefreshed;
+    /** Game time until which the block must not collapse back into an ordinary block. */
+    private long holdOpenUntil;
 
     public CellBlockEntity(BlockPos pos, BlockState state) {
         super(ModRegistry.CELL_BLOCK_ENTITY.get(), pos, state);
@@ -80,6 +83,10 @@ public class CellBlockEntity extends BlockEntity {
         setChanged();
     }
 
+    public void holdOpen(long untilGameTime) {
+        holdOpenUntil = Math.max(holdOpenUntil, untilGameTime);
+    }
+
     public int @Nullable [] preview() {
         return preview;
     }
@@ -106,6 +113,9 @@ public class CellBlockEntity extends BlockEntity {
             return;
         }
         int[] states = ViewerSessions.capture(room);
+        if (level.getGameTime() >= holdOpenUntil && MicroBlocks.collapseIfUniform(level, worldPosition, states)) {
+            return;
+        }
         int hash = Arrays.hashCode(states);
         if (preview == null || hash != previewHash || !Arrays.equals(states, preview)) {
             preview = states;
@@ -201,6 +211,8 @@ public class CellBlockEntity extends BlockEntity {
                 RoomManager.setLoaded(room, true);
                 ticketHeld = true;
             }
+            // Leave time to build something in a fresh (or freshly loaded) micro block before it may collapse.
+            holdOpen(serverLevel.getGameTime() + MicroBlocks.COLLAPSE_GRACE_TICKS);
         }
     }
 

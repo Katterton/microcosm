@@ -6,6 +6,7 @@
     "microcosm:nano_probe",
     "microcosm:field_manipulator",
     "microcosm:cell",
-    "microcosm:port"
+    "microcosm:port",
+    "microcosm:scale_converter"
   ]
 }

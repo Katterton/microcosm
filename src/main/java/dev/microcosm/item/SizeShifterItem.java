@@ -1,7 +1,6 @@
 package dev.microcosm.item;
 
 import dev.microcosm.MicrocosmConfig;
-import dev.microcosm.block.CellBlock;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.ShiftManager;
 import net.minecraft.network.chat.Component;
@@ -18,8 +17,8 @@ import net.neoforged.neoforge.common.util.FakePlayer;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Lets a player enter rooms in person. Use it on a cell to shrink into its room; sneak-use it inside a room to grow
- * back out next to the cell.
+ * Lets a player enter blocks in person. Use it on a block to shrink into it (it is divided into microblocks if
+ * needed); sneak-use it inside a room to grow back out next to the block.
  */
 public class SizeShifterItem extends Item {
     public SizeShifterItem(Properties properties) {
@@ -28,9 +27,6 @@ public class SizeShifterItem extends Item {
 
     @Override
     public InteractionResult useOn(UseOnContext context) {
-        if (!(context.getLevel().getBlockState(context.getClickedPos()).getBlock() instanceof CellBlock)) {
-            return InteractionResult.PASS;
-        }
         if (context.getLevel() instanceof ServerLevel level && context.getPlayer() instanceof ServerPlayer player
                 && !(player instanceof FakePlayer)) {
             finish(player, context.getItemInHand(), context.getHand(), ShiftManager.enter(player, level, context.getClickedPos()));

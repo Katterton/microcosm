@@ -1,10 +1,12 @@
 package dev.microcosm.device;
 
 import dev.microcosm.MicrocosmConfig;
-import dev.microcosm.block.CellBlock;
 import dev.microcosm.network.ViewPayload;
 import dev.microcosm.network.ViewerRequestPayload;
+import dev.microcosm.world.MicroBlocks;
 import dev.microcosm.world.MicrocosmLevels;
+import java.util.Arrays;
+import net.minecraft.world.level.block.state.BlockState;
 import dev.microcosm.world.RoomManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,7 +55,7 @@ public final class ViewerSessions {
     private ViewerSessions() {}
 
     public static void open(ServerPlayer player, ServerLevel level, BlockPos viewerPos) {
-        BlockPos cell = RoomPath.cellBelow(level, viewerPos);
+        BlockPos cell = RoomPath.targetBelow(level, viewerPos);
         if (cell == null) {
             return;
         }
@@ -115,15 +117,18 @@ public final class ViewerSessions {
     }
 
     private static void zoomIn(ServerLevel level, DeviceBlockEntity viewer, Session session, BlockPos local) {
-        RoomManager.Room room = RoomPath.resolve(level, session.path);
-        if (room == null || !RoomPath.isLocal(local)) {
+        RoomPath.View view = RoomPath.view(level, session.path);
+        if (view == null || !RoomPath.isLocal(local)) {
             return;
         }
-        BlockPos cell = room.origin().offset(local);
-        if (!(room.level().getBlockState(cell).getBlock() instanceof CellBlock)) {
+        BlockPos cell = view.room().origin().offset(local);
+        BlockState target = view.stateAt(cell);
+        boolean opens = view.uniform() == null ? MicroBlocks.isMicro(target) || MicroBlocks.isDivisible(target)
+                : MicroBlocks.isDivisible(target);
+        if (!opens || MicrocosmLevels.depth(view.room().level()) >= MicrocosmLevels.MAX_DEPTH) {
             return;
         }
-        if (MicrocosmLevels.depth(room.level()) + 1 > viewer.kind().viewerTier) {
+        if (MicrocosmLevels.depth(view.room().level()) + 1 > viewer.kind().viewerTier) {
             session.status = "too_deep";
             return;
         }
@@ -165,13 +170,15 @@ public final class ViewerSessions {
     }
 
     /**
-     * The actuator next to the root cell for a room at {@code depth}: the lowest tier that still reaches it (the
+     * The actuator working on the root block for a room at {@code depth}: the lowest tier that still reaches it (the
      * fastest), otherwise the highest tier there is.
      */
     public static @Nullable DeviceBlockEntity actuator(ServerLevel level, BlockPos rootCell, int depth) {
         DeviceBlockEntity best = null;
         for (Direction dir : Direction.values()) {
-            if (level.getBlockEntity(rootCell.relative(dir)) instanceof DeviceBlockEntity device && device.kind().isActuator()) {
+            BlockPos devicePos = rootCell.relative(dir);
+            if (level.getBlockEntity(devicePos) instanceof DeviceBlockEntity device && device.kind().isActuator()
+                    && rootCell.equals(RoomPath.actuatorTarget(level, devicePos))) {
                 if (best == null || better(device.kind().actuatorTier, best.kind().actuatorTier, depth)) {
                     best = device;
                 }
@@ -190,8 +197,8 @@ public final class ViewerSessions {
     }
 
     private static int depthOf(ServerLevel level, Session session) {
-        RoomManager.Room room = RoomPath.resolve(level, session.path);
-        return room == null ? session.path.size() : MicrocosmLevels.depth(room.level());
+        RoomPath.View view = RoomPath.view(level, session.path);
+        return view == null ? session.path.size() : MicrocosmLevels.depth(view.room().level());
     }
 
     private static @Nullable DeviceBlockEntity viewer(ServerLevel level, Session session) {
@@ -206,28 +213,29 @@ public final class ViewerSessions {
         }
         long now = level.getGameTime();
         MicrocosmConfig.Tier tier = viewer.tierConfig();
-        RoomManager.Room room = RoomPath.resolve(level, session.path);
-        if (room == null) {
-            // The cell we zoomed into is gone; fall back to the outermost room.
-            while (session.path.size() > 1 && room == null) {
+        RoomPath.View view = RoomPath.view(level, session.path);
+        if (view == null) {
+            // The block we zoomed into is gone; fall back to the outermost room.
+            while (session.path.size() > 1 && view == null) {
                 session.path.removeLast();
-                room = RoomPath.resolve(level, session.path);
+                view = RoomPath.view(level, session.path);
             }
             session.data = NO_DATA;
             session.status = "room_gone";
         }
+        RoomManager.Room room = view == null ? null : view.room();
         boolean due = now >= session.nextRefresh;
         if (viewer.kind().isBlind()) {
-            if (session.scanDone >= 0 && now >= session.scanDone && room != null) {
-                session.data = capture(room);
+            if (session.scanDone >= 0 && now >= session.scanDone && view != null) {
+                session.data = capture(view);
                 session.dataTime = now;
                 session.scanDone = -1;
                 session.status = "";
             }
             session.nextRefresh = now + STATUS_INTERVAL;
-        } else if (due && room != null) {
+        } else if (due && view != null) {
             if (viewer.consumeEnergy(tier.viewEnergy.getAsInt())) {
-                session.data = capture(room);
+                session.data = capture(view);
                 session.dataTime = now;
                 if ("no_energy".equals(session.status)) {
                     session.status = "";
@@ -268,6 +276,16 @@ public final class ViewerSessions {
                 actuator == null ? 0 : actuator.energyStored(),
                 actuator == null ? 0 : actuator.energyCapacity(),
                 session.status));
+    }
+
+    /** What a viewer sees: the real room, or the block's material everywhere if it is not divided yet. */
+    private static int[] capture(RoomPath.View view) {
+        if (view.uniform() != null) {
+            int[] states = new int[16 * 16 * 16];
+            Arrays.fill(states, Block.getId(view.uniform()));
+            return states;
+        }
+        return capture(view.room());
     }
 
     /** The room's block states in viewer order. */

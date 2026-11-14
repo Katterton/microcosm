@@ -67,7 +67,7 @@ public class DeviceBlock extends Block implements EntityBlock {
         boolean openInventory = kind.hasInventory && (!kind.isViewer() || player.isShiftKeyDown());
         if (openInventory) {
             player.openMenu(device);
-        } else if (RoomPath.cellBelow(serverLevel, pos) == null) {
+        } else if (RoomPath.targetBelow(serverLevel, pos) == null) {
             player.sendOverlayMessage(Component.translatable("message.microcosm.no_cell_below"));
         } else {
             ViewerSessions.open(serverPlayer, serverLevel, pos);

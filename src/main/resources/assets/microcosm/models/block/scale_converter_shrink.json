@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "microcosm:block/scale_converter_top",
+    "bottom": "microcosm:block/scale_converter_bottom",
+    "side": "microcosm:block/scale_converter_shrink"
+  }
+}

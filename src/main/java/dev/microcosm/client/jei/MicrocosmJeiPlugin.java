@@ -45,7 +45,7 @@ public class MicrocosmJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipeCatalysts(IRecipeCatalystRegistration registration) {
-        registration.addCraftingStation(FabricationCategory.TYPE, ModRegistry.CELL.get(), ModRegistry.MICRO_SOLDERING_IRON.get());
+        registration.addCraftingStation(FabricationCategory.TYPE, ModRegistry.MICRO_SOLDERING_IRON.get());
         for (DeviceKind kind : DeviceKind.values()) {
             if (kind.isActuator()) {
                 registration.addCraftingStation(FabricationCategory.TYPE, ModRegistry.DEVICES.get(kind).get());

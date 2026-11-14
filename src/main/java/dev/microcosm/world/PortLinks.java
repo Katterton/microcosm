@@ -8,6 +8,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.capabilities.IBlockCapabilityProvider;
 import org.jspecify.annotations.Nullable;
 
@@ -89,7 +92,8 @@ public final class PortLinks {
                 return null;
             }
             BlockPos target = port.pos().relative(side.getOpposite());
-            return guarded(() -> port.level().isLoaded(target) ? port.level().getCapability(capability, target, side) : null);
+            T handler = guarded(() -> port.level().isLoaded(target) ? port.level().getCapability(capability, target, side) : null);
+            return scaled(capability, handler, MicrocosmLevels.depth(parent), MicrocosmLevels.depth(port.level()));
         };
     }
 
@@ -105,9 +109,20 @@ public final class PortLinks {
                 return null;
             }
             BlockPos target = link.cellPos().relative(facing);
-            return guarded(() -> link.parent().isLoaded(target)
+            T handler = guarded(() -> link.parent().isLoaded(target)
                     ? link.parent().getCapability(capability, target, facing.getOpposite()) : null);
+            return scaled(capability, handler, MicrocosmLevels.depth(child), MicrocosmLevels.depth(link.parent()));
         };
+    }
+
+    /** Items crossing a port keep their absolute scale (see {@link ItemScales}); other capabilities pass as they are. */
+    @SuppressWarnings("unchecked")
+    private static <T> @Nullable T scaled(BlockCapability<T, @Nullable Direction> capability, @Nullable T handler,
+                                          int callerDepth, int ownerDepth) {
+        if (handler != null && capability == Capabilities.Item.BLOCK && callerDepth != ownerDepth) {
+            return (T) new ScaledItemHandler((ResourceHandler<ItemResource>) handler, callerDepth, ownerDepth);
+        }
+        return handler;
     }
 
     private static <T> @Nullable T guarded(Supplier<@Nullable T> lookup) {
