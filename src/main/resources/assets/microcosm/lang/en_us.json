@@ -91,5 +91,6 @@
   "message.microcosm.shift.room_full": "There is no space in that room.",
   "message.microcosm.shift.not_in_room": "You are not inside a room.",
   "message.microcosm.shift.entered": "Scale level %s",
-  "message.microcosm.shift.left": "Back on scale level %s"
+  "message.microcosm.shift.left": "Back on scale level %s",
+  "message.microcosm.no_cell_below": "Place the viewer on top of a cell."
 }

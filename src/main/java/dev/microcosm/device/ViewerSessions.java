@@ -53,7 +53,7 @@ public final class ViewerSessions {
     private ViewerSessions() {}
 
     public static void open(ServerPlayer player, ServerLevel level, BlockPos viewerPos) {
-        BlockPos cell = RoomPath.adjacentCell(level, viewerPos);
+        BlockPos cell = RoomPath.cellBelow(level, viewerPos);
         if (cell == null) {
             return;
         }

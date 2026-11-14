@@ -91,5 +91,6 @@
   "message.microcosm.shift.room_full": "In diesem Raum ist kein Platz.",
   "message.microcosm.shift.not_in_room": "Du bist in keinem Raum.",
   "message.microcosm.shift.entered": "Skalenebene %s",
-  "message.microcosm.shift.left": "Zurück auf Skalenebene %s"
+  "message.microcosm.shift.left": "Zurück auf Skalenebene %s",
+  "message.microcosm.no_cell_below": "Stell das Gerät oben auf eine Zelle."
 }

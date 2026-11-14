@@ -18,8 +18,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A room access device. Placed next to a cell. Right-click a viewer to look into the room; right-click an actuator
- * (or sneak-right-click the field manipulator) to open its inventory.
+ * A room access device. Manipulators go on any side of a cell, viewers on top of it. Right-click a viewer to look
+ * into the room; right-click an actuator (or sneak-right-click the field manipulator) to open its inventory.
  */
 public class DeviceBlock extends Block implements EntityBlock {
     private final DeviceKind kind;
@@ -67,8 +67,8 @@ public class DeviceBlock extends Block implements EntityBlock {
         boolean openInventory = kind.hasInventory && (!kind.isViewer() || player.isShiftKeyDown());
         if (openInventory) {
             player.openMenu(device);
-        } else if (RoomPath.adjacentCell(serverLevel, pos) == null) {
-            player.sendOverlayMessage(Component.translatable("message.microcosm.no_cell"));
+        } else if (RoomPath.cellBelow(serverLevel, pos) == null) {
+            player.sendOverlayMessage(Component.translatable("message.microcosm.no_cell_below"));
         } else {
             ViewerSessions.open(serverPlayer, serverLevel, pos);
         }

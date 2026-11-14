@@ -26,6 +26,12 @@ public final class RoomPath {
         return null;
     }
 
+    /** The cell directly below a viewer, which is the only place a viewer looks into. */
+    public static @Nullable BlockPos cellBelow(ServerLevel level, BlockPos viewerPos) {
+        BlockPos pos = viewerPos.below();
+        return level.isLoaded(pos) && level.getBlockState(pos).getBlock() instanceof CellBlock ? pos : null;
+    }
+
     /** The room the path leads to, or null if any step is no longer a cell inside the previous room. */
     public static RoomManager.@Nullable Room resolve(ServerLevel level, List<BlockPos> path) {
         if (path.isEmpty()) {

@@ -7,6 +7,7 @@ import dev.microcosm.block.PortBlock;
 import dev.microcosm.device.DeviceBlock;
 import dev.microcosm.device.DeviceBlockEntity;
 import dev.microcosm.device.DeviceKind;
+import dev.microcosm.device.ViewerDeviceBlock;
 import dev.microcosm.item.SizeShifterItem;
 import net.minecraft.world.item.Rarity;
 import java.util.EnumMap;
@@ -55,8 +56,11 @@ public final class ModRegistry {
 
     static {
         for (DeviceKind kind : DeviceKind.values()) {
-            DeferredBlock<DeviceBlock> block = BLOCKS.registerBlock(kind.id, p -> new DeviceBlock(p, kind),
-                    p -> p.mapColor(MapColor.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops());
+            DeferredBlock<DeviceBlock> block = kind.isViewer()
+                    ? BLOCKS.registerBlock(kind.id, p -> new ViewerDeviceBlock(p, kind),
+                            p -> p.mapColor(MapColor.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops().noOcclusion())
+                    : BLOCKS.registerBlock(kind.id, p -> new DeviceBlock(p, kind),
+                            p -> p.mapColor(MapColor.METAL).strength(3.5f, 6f).requiresCorrectToolForDrops());
             DEVICES.put(kind, block);
             DEVICE_ITEMS.put(kind, ITEMS.registerSimpleBlockItem(kind.id, block));
         }

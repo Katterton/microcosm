@@ -10,7 +10,7 @@ with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.4.1)
+## Features (v0.5.0)
 
 ### Cells and rooms
 
@@ -49,7 +49,9 @@ the same side of the cell one level up. One port per side is active.
 
 ### Access devices
 
-Placed next to a cell. They let you see and work in rooms without entering them:
+They let you see and work in rooms without entering them. Viewers sit **on top** of a cell, like a microscope
+above its specimen; manipulators go on any side of the cell. The microscopes have their own 3D models and face the
+player who placed them.
 
 | Device | Tier | Function |
 |---|---|---|
