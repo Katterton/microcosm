@@ -93,6 +93,30 @@ public final class MicroBlocks {
     }
 
     /**
+     * Opens the block at {@code pos} for something arriving from a neighbouring room: divisible blocks are divided,
+     * air becomes an empty room (which collapses back to air once nothing is in it).
+     *
+     * @return whether there is a room at {@code pos} now
+     */
+    public static boolean openForNeighbour(ServerLevel level, BlockPos pos) {
+        if (MicrocosmLevels.depth(level) >= MicrocosmLevels.MAX_DEPTH || !level.isLoaded(pos)) {
+            return false;
+        }
+        BlockState state = level.getBlockState(pos);
+        if (isMicro(state) || isDivisible(state, level, pos)) {
+            return open(level, pos) != null;
+        }
+        if (!state.isAir() || !state.getFluidState().isEmpty() || RoomManager.roomOf(level, pos, true) == null) {
+            return false;
+        }
+        level.setBlock(pos, ModRegistry.CELL.get().defaultBlockState(), Block.UPDATE_ALL);
+        if (level.getBlockEntity(pos) instanceof CellBlockEntity cell) {
+            cell.holdOpen(level.getGameTime() + COLLAPSE_GRACE_TICKS);
+        }
+        return true;
+    }
+
+    /**
      * Turns a micro block back into an ordinary block (or air) if its room holds nothing but one divisible material
      * and nothing is moving around in it.
      *

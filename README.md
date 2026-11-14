@@ -11,7 +11,7 @@ automated with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.7.1)
+## Features (v0.8.0)
 
 ### Scales
 
@@ -70,6 +70,12 @@ Material must never change its worth by crossing a scale boundary. The mod enfor
   the Divided Block turns back into an ordinary block of that material, or into air.
 - **Mirrored layout:** divided blocks that touch each other within the same 16³ section have rooms that touch as
   well, with no wall between them, so machines in neighbouring rooms can build into a room.
+- **Seamless between neighbours:** a wall between a room and a neighbouring block in the same 16³ section is not
+  final. When a player comes within 3 blocks of it, a projectile (ender pearl, arrow, …) hits it, or fluid or a
+  piston presses against it, the neighbour is opened: a divisible block is divided (you face its microblocks), air
+  becomes an empty room you can walk into (it collapses back to air once nothing is in it). From then on the two
+  rooms touch without a wall, so walking, ender pearls, redstone, water, pistons and mobs all cross normally.
+  Walls to blocks that cannot be divided (chests, slabs, fluids) and to other 16³ sections stay.
 - **Chained chunk loading:** a room stays loaded as long as its block is loaded.
 - **Break protection:** a Divided Block cannot be broken by hand; change it from the inside instead.
 - **Miniature:** a Divided Block is a glass-framed case that shows its room inside at 1/16 scale, one room block per pixel,
@@ -187,7 +193,7 @@ Requires Java 25.
 
 Open a world directly: `./gradlew runClient -PquickPlay=<world name>`.
 
-Smoke test on the dedicated server (43 checks: rooms, recipes, ports, devices, dividing, scales, converter, dupe protection):
+Smoke test on the dedicated server (48 checks: rooms, recipes, ports, devices, dividing, scales, converter, dupe protection, opening walls):
 
 ```bash
 rm -rf run/world && mkdir -p run/world/datapacks && cp -r dev/smoketest-datapack run/world/datapacks/mctest
@@ -197,5 +203,6 @@ echo "eula=true" > run/eula.txt
 
 ## Next steps
 
-1. EMI integration once there is an official EMI release for 26.1 (its official maven currently ends at 1.21.1;
+1. Seamless across 16³ section boundaries on level 1 (contiguous layout, limited to a 254-block height band)
+2. EMI integration once there is an official EMI release for 26.1 (its official maven currently ends at 1.21.1;
    26.1 only has the unofficial "SEMI" port)

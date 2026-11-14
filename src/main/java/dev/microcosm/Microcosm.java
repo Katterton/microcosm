@@ -29,6 +29,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.DynamicWalls;
 import dev.microcosm.world.ScaleRules;
 import dev.microcosm.world.ShiftManager;
 import net.minecraft.core.Direction;
@@ -79,6 +80,7 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
         ScaleRules.register();
+        DynamicWalls.register();
         NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
         NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, e -> {
             RecipeSyncPayload payload = new RecipeSyncPayload(RecipeDisplay.all(e.getPlayerList().getServer()));
