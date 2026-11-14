@@ -1,7 +1,27 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "microcosm:block/nano_probe"
+    },
+    "facing=south": {
+      "model": "microcosm:block/nano_probe",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "microcosm:block/nano_probe",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "microcosm:block/nano_probe",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "microcosm:block/nano_probe",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "microcosm:block/nano_probe",
+      "x": 90
     }
   }
 }

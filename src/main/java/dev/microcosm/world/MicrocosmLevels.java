@@ -2,6 +2,7 @@ package dev.microcosm.world;
 
 import dev.microcosm.Microcosm;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -39,6 +40,16 @@ public final class MicrocosmLevels {
 
     public static int depth(Level level) {
         return depth(level.dimension());
+    }
+
+    /** The scale's name with its unit, e.g. "Milliblock (mBk)"; depth 0 is the normal "Block". */
+    public static Component scaleName(int depth) {
+        return Component.translatable("scale.microcosm." + Math.max(0, Math.min(MAX_DEPTH, depth)));
+    }
+
+    /** Just the unit: Bk, mBk, \u00b5Bk or nBk. */
+    public static Component scaleUnit(int depth) {
+        return Component.translatable("scale.microcosm." + Math.max(0, Math.min(MAX_DEPTH, depth)) + ".unit");
     }
 
     /** The level that rooms of cells placed in {@code parent} live in, or null at the deepest level. */

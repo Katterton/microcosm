@@ -5,7 +5,6 @@ import dev.microcosm.ModRegistry;
 import dev.microcosm.fabrication.RecipeDisplay;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -20,6 +19,8 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import dev.microcosm.world.MicrocosmLevels;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.EmptyBlockGetter;
@@ -173,8 +174,14 @@ public class FabricationCategory implements IRecipeCategory<RecipeDisplay> {
     }
 
     private static Component header(RecipeDisplay recipe) {
-        String scales = recipe.scales().isEmpty() ? "*"
-                : recipe.scales().stream().map(String::valueOf).collect(Collectors.joining(", "));
+        MutableComponent scales = Component.empty();
+        List<Integer> levels = recipe.scales().isEmpty() ? List.of(1, 2, 3) : recipe.scales();
+        for (int i = 0; i < levels.size(); i++) {
+            if (i > 0) {
+                scales.append(", ");
+            }
+            scales.append(MicrocosmLevels.scaleUnit(levels.get(i)));
+        }
         return Component.translatable(recipe.cube() ? "jei.microcosm.cube" : "jei.microcosm.local", scales,
                 recipe.sizeX(), recipe.sizeY(), recipe.sizeZ());
     }

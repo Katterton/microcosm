@@ -137,7 +137,7 @@ public final class MicrocosmCommands {
         player.teleport(new TeleportTransition(room.level(), target, Vec3.ZERO, player.getYRot(), player.getXRot(),
                 Set.of(), TeleportTransition.DO_NOTHING));
         source.sendSuccess(() -> Component.translatable("commands.microcosm.entered",
-                MicrocosmLevels.depth(room.level())), false);
+                MicrocosmLevels.scaleName(MicrocosmLevels.depth(room.level()))), false);
         return 1;
     }
 
@@ -173,7 +173,7 @@ public final class MicrocosmCommands {
         BlockPos pos = BlockPos.containing(source.getPosition());
         int depth = MicrocosmLevels.depth(level);
         RoomManager.Parent parent = RoomManager.parentOf(level, pos);
-        source.sendSuccess(() -> Component.translatable("commands.microcosm.info", depth,
+        source.sendSuccess(() -> Component.translatable("commands.microcosm.info", MicrocosmLevels.scaleName(depth),
                 parent == null ? "-" : parent.level().dimension().identifier() + " " + parent.pos().toShortString(),
                 FabricationRecipes.all().size()), false);
         return 1;

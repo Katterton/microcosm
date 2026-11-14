@@ -1,7 +1,27 @@
 {
   "variants": {
-    "": {
+    "facing=north": {
       "model": "microcosm:block/manipulator_arm"
+    },
+    "facing=south": {
+      "model": "microcosm:block/manipulator_arm",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "microcosm:block/manipulator_arm",
+      "y": 90
+    },
+    "facing=west": {
+      "model": "microcosm:block/manipulator_arm",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "microcosm:block/manipulator_arm",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "microcosm:block/manipulator_arm",
+      "x": 90
     }
   }
 }

@@ -4,6 +4,7 @@ import dev.microcosm.block.CellBlock;
 import dev.microcosm.device.DeviceAction;
 import dev.microcosm.network.ViewPayload;
 import dev.microcosm.network.ViewerRequestPayload;
+import dev.microcosm.world.MicrocosmLevels;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -215,7 +216,7 @@ public class ViewerScreen extends Screen {
         updateModeButtons();
         int titleColor = 0xFFFFFFFF;
         graphics.text(font, Component.translatable(iso ? "screen.microcosm.header_3d" : "screen.microcosm.header",
-                Component.translatable("screen.microcosm.tier." + view.viewerTier()), view.depth(), layer), left, top - 12, titleColor);
+                Component.translatable("screen.microcosm.tier." + view.viewerTier()), MicrocosmLevels.scaleName(view.depth()), layer), left, top - 12, titleColor);
         graphics.fill(left - 1, top - 1, left + GRID + 1, top + GRID + 1, 0xFF4A6070);
         graphics.fill(left, top, left + GRID, top + GRID, 0xFF0B1418);
         if (view.hasRoom() && iso) {

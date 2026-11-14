@@ -10,7 +10,18 @@ with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.5.0)
+## Features (v0.6.0)
+
+### Scales
+
+| Level | Scale | Name | Unit |
+|---|---|---|---|
+| 0 | 1 | Block | Bk |
+| 1 | 1/16 | Milliblock | mBk |
+| 2 | 1/256 | Microblock | µBk |
+| 3 | 1/4096 | Nanoblock | nBk |
+
+The units end in "Bk" so they are not mistaken for millibuckets (mB). Recipe files keep using level numbers.
 
 ### Cells and rooms
 
@@ -50,8 +61,8 @@ the same side of the cell one level up. One port per side is active.
 ### Access devices
 
 They let you see and work in rooms without entering them. Viewers sit **on top** of a cell, like a microscope
-above its specimen; manipulators go on any side of the cell. The microscopes have their own 3D models and face the
-player who placed them.
+above its specimen; manipulators go on any side of the cell. All devices have their own 3D models: the microscopes face the player who placed
+them, and the manipulators point their tool at the cell they are attached to.
 
 | Device | Tier | Function |
 |---|---|---|

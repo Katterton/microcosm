@@ -113,7 +113,7 @@ public final class ShiftManager {
                 if (t >= 1) {
                     teleport(player, shift.target, shift.position);
                     setScale(player, 1);
-                    player.sendOverlayMessage(Component.translatable("message.microcosm.shift.entered", shift.depth));
+                    player.sendOverlayMessage(Component.translatable("message.microcosm.shift.entered", MicrocosmLevels.scaleName(shift.depth)));
                     PROGRESS.remove(entry.getKey());
                     it.remove();
                 }
@@ -121,7 +121,7 @@ public final class ShiftManager {
                 setScale(player, MIN_SCALE + (1 - MIN_SCALE) * t);
                 if (t >= 1) {
                     setScale(player, 1);
-                    player.sendOverlayMessage(Component.translatable("message.microcosm.shift.left", shift.depth));
+                    player.sendOverlayMessage(Component.translatable("message.microcosm.shift.left", MicrocosmLevels.scaleName(shift.depth)));
                     PROGRESS.remove(entry.getKey());
                     it.remove();
                 }
