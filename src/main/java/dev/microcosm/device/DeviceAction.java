@@ -5,6 +5,7 @@ import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.RoomManager;
 import dev.microcosm.world.ItemScales;
+import dev.microcosm.world.ScaleRules;
 import dev.microcosm.world.ShiftManager;
 import java.util.List;
 import net.minecraft.core.BlockPos;
@@ -83,7 +84,7 @@ public record DeviceAction(List<BlockPos> path, BlockPos local, Type type, int s
                 if (ItemScales.scaleOf(stack, deviceDepth) != roomDepth) {
                     yield Result.WRONG_SCALE;
                 }
-                if (!level.getBlockState(target).canBeReplaced()) {
+                if (!level.getBlockState(target).canBeReplaced() || blockItem.getBlock().defaultBlockState().is(ScaleRules.BLOCKED_IN_ROOMS)) {
                     yield Result.BLOCKED;
                 }
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemScales.move(stack, deviceDepth, roomDepth));

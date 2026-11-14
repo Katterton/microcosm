@@ -15,7 +15,6 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import dev.microcosm.network.ViewerRequestPayload;
 import dev.microcosm.world.ItemScales;
 import dev.microcosm.world.MicrocosmLevels;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import dev.microcosm.world.PortLinks;
@@ -30,6 +29,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ScaleRules;
 import dev.microcosm.world.ShiftManager;
 import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.BlockCapability;
@@ -43,6 +43,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import net.minecraft.util.TriState;
 import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -77,6 +78,7 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, Microcosm::onPlaceScaled);
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
+        ScaleRules.register();
         NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
         NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, e -> {
             RecipeSyncPayload payload = new RecipeSyncPayload(RecipeDisplay.all(e.getPlayerList().getServer()));
@@ -126,10 +128,10 @@ public class Microcosm {
     private static void onPlaceScaled(PlayerInteractEvent.RightClickBlock event) {
         ItemStack stack = event.getItemStack();
         int depth = MicrocosmLevels.depth(event.getLevel());
-        if (stack.getItem() instanceof BlockItem && !ItemScales.fits(stack, depth)) {
-            event.setCanceled(true);
-            event.setCancellationResult(InteractionResult.FAIL);
-            if (!event.getLevel().isClientSide()) {
+        if (ItemScales.isForeign(stack) || stack.getItem() instanceof BlockItem && !ItemScales.fits(stack, depth)) {
+            // The block itself can still be used (open a chest with Milliblock gold in hand), only the item cannot.
+            event.setUseItem(TriState.FALSE);
+            if (!event.getLevel().isClientSide() && stack.getItem() instanceof BlockItem) {
                 event.getEntity().sendOverlayMessage(Component.translatable("message.microcosm.wrong_scale",
                         MicrocosmLevels.scaleName(ItemScales.scaleOf(stack, depth)), MicrocosmLevels.scaleName(depth)));
             }

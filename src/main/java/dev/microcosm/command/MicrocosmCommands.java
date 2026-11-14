@@ -15,6 +15,8 @@ import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.world.MicrocosmLevels;
 import dev.microcosm.world.MicroBlocks;
 import dev.microcosm.world.RoomManager;
+import dev.microcosm.world.ScaleRules;
+import dev.microcosm.world.ScaleSelfTest;
 import dev.microcosm.world.ShiftManager;
 import java.util.Set;
 import net.minecraft.commands.CommandSourceStack;
@@ -54,6 +56,12 @@ public final class MicrocosmCommands {
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .executes(c -> check(c.getSource(), BlockPosArgument.getLoadedBlockPos(c, "pos")))))
                 .then(Commands.literal("info").executes(c -> info(c.getSource())))
+                .then(Commands.literal("selftest").executes(c -> {
+                    for (String line : ScaleSelfTest.run()) {
+                        c.getSource().getServer().getPlayerList().broadcastSystemMessage(Component.literal(line), false);
+                    }
+                    return 1;
+                }))
                 .then(Commands.literal("act")
                         .then(Commands.argument("actuator", BlockPosArgument.blockPos())
                                 .then(Commands.argument("type", StringArgumentType.word())
@@ -131,8 +139,8 @@ public final class MicrocosmCommands {
         }
         BlockPos spot = ShiftManager.findSpotInRoom(room);
         Vec3 target = Vec3.atBottomCenterOf(spot != null ? spot : room.spawnPoint());
-        player.teleport(new TeleportTransition(room.level(), target, Vec3.ZERO, player.getYRot(), player.getXRot(),
-                Set.of(), TeleportTransition.DO_NOTHING));
+        ScaleRules.allowTravel(() -> player.teleport(new TeleportTransition(room.level(), target, Vec3.ZERO,
+                player.getYRot(), player.getXRot(), Set.of(), TeleportTransition.DO_NOTHING)));
         source.sendSuccess(() -> Component.translatable("commands.microcosm.entered",
                 MicrocosmLevels.scaleName(MicrocosmLevels.depth(room.level()))), false);
         return 1;
@@ -146,8 +154,8 @@ public final class MicrocosmCommands {
             return 0;
         }
         Vec3 target = Vec3.atBottomCenterOf(parent.pos().above());
-        player.teleport(new TeleportTransition(parent.level(), target, Vec3.ZERO, player.getYRot(), player.getXRot(),
-                Set.of(), TeleportTransition.DO_NOTHING));
+        ScaleRules.allowTravel(() -> player.teleport(new TeleportTransition(parent.level(), target, Vec3.ZERO,
+                player.getYRot(), player.getXRot(), Set.of(), TeleportTransition.DO_NOTHING)));
         return 1;
     }
 

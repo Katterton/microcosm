@@ -108,5 +108,7 @@
   "message.microcosm.converter.shrink": "Shrinking: %s of %s left to hand out (sneak-right-click: switch to growing)",
   "message.microcosm.converter.grow": "Growing: %s of %s collected (sneak-right-click: switch to shrinking)",
   "message.microcosm.result.wrong_scale": "Material has the wrong scale",
-  "message.microcosm.status.wrong_scale": "Material has the wrong scale"
+  "message.microcosm.status.wrong_scale": "Material has the wrong scale",
+  "message.microcosm.blocked_in_rooms": "This block cannot be used inside a room.",
+  "message.microcosm.wrong_scale_armor": "That armour is not your size."
 }

@@ -108,5 +108,7 @@
   "message.microcosm.converter.shrink": "Verkleinern: noch %s von %s auszugeben (Schleichen + Rechtsklick: auf Vergrößern umschalten)",
   "message.microcosm.converter.grow": "Vergrößern: %s von %s gesammelt (Schleichen + Rechtsklick: auf Verkleinern umschalten)",
   "message.microcosm.result.wrong_scale": "Material hat die falsche Skala",
-  "message.microcosm.status.wrong_scale": "Material hat die falsche Skala"
+  "message.microcosm.status.wrong_scale": "Material hat die falsche Skala",
+  "message.microcosm.blocked_in_rooms": "Dieser Block lässt sich in Räumen nicht benutzen.",
+  "message.microcosm.wrong_scale_armor": "Diese Rüstung hat nicht deine Größe."
 }

@@ -33,3 +33,6 @@ down and enter them in person.
     versionRange="[29.53,)"
     ordering="AFTER"
     side="CLIENT"
+
+[[mixins]]
+    config="microcosm.mixins.json"

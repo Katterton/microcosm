@@ -11,7 +11,7 @@ automated with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.7.0)
+## Features (v0.7.1)
 
 ### Scales
 
@@ -39,6 +39,26 @@ The units end in "Bk" so they are not mistaken for millibuckets (mB). Recipe fil
   pipes work; by hand, right-click with an item to insert it, with an empty hand to take the output, and
   sneak-right-click to switch modes.
 - Mining a microblock (by hand inside a room or with a manipulator) gives material of that scale.
+
+### No duplication across scales
+
+Material must never change its worth by crossing a scale boundary. The mod enforces that like this:
+
+- **No crafting with foreign material:** an item of a foreign scale counts as no ingredient (crafting, furnaces and
+  machines that use vanilla ingredients). Inside a room of its own scale it crafts normally.
+- **Foreign items are inert:** they can be stored, moved and converted, but not used, eaten, worn, swung or used for
+  mining.
+- **Containers inside items** (shulker boxes, bundles) are converted together with the item.
+- **Fluids and energy through ports** are converted too: 1 unit at one scale is 4096 one scale smaller. Only whole
+  units of the larger scale cross, so rounding can never create anything.
+- **Rooms are only entered and left with the Size Shifter** (or the operator commands): portals, teleporters and
+  items thrown through portals do not work into or out of rooms. With keepInventory, a player who dies in a room
+  keeps the scale of what they carry.
+- **The ender chest** stores items with their absolute scale.
+- **Storage that reaches other dimensions** cannot be placed inside rooms: block tag `microcosm:blocked_in_rooms`
+  (ships with optional entries for AE2 quantum links, Mekanism quantum entangloporters and teleporters, Refined
+  Storage transmitters, Ender Storage and a few more; pack makers can extend it).
+- `/microcosm selftest` checks the fluid/energy conversion.
 
 ### Microblocks and rooms
 
@@ -167,7 +187,7 @@ Requires Java 25.
 
 Open a world directly: `./gradlew runClient -PquickPlay=<world name>`.
 
-Smoke test on the dedicated server (36 checks: rooms, recipes, ports, devices, dividing, scales, converter):
+Smoke test on the dedicated server (43 checks: rooms, recipes, ports, devices, dividing, scales, converter, dupe protection):
 
 ```bash
 rm -rf run/world && mkdir -p run/world/datapacks && cp -r dev/smoketest-datapack run/world/datapacks/mctest

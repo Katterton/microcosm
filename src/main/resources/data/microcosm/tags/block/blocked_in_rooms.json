@@ -1,0 +1,48 @@
+{
+  "values": [
+    {
+      "id": "ae2:quantum_link",
+      "required": false
+    },
+    {
+      "id": "ae2:quantum_ring",
+      "required": false
+    },
+    {
+      "id": "ae2:spatial_io_port",
+      "required": false
+    },
+    {
+      "id": "mekanism:quantum_entangloporter",
+      "required": false
+    },
+    {
+      "id": "mekanism:teleporter",
+      "required": false
+    },
+    {
+      "id": "refinedstorage:network_transmitter",
+      "required": false
+    },
+    {
+      "id": "refinedstorage:network_receiver",
+      "required": false
+    },
+    {
+      "id": "enderstorage:ender_chest",
+      "required": false
+    },
+    {
+      "id": "enderstorage:ender_tank",
+      "required": false
+    },
+    {
+      "id": "compactmachines:machine",
+      "required": false
+    },
+    {
+      "id": "integrateddynamics:proxy",
+      "required": false
+    }
+  ]
+}

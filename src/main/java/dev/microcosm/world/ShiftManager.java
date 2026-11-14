@@ -139,8 +139,8 @@ public final class ShiftManager {
             }
             player.getInventory().setChanged();
         }
-        player.teleport(new TeleportTransition(level, pos, Vec3.ZERO, player.getYRot(), player.getXRot(),
-                Set.of(), TeleportTransition.DO_NOTHING));
+        ScaleRules.allowTravel(() -> player.teleport(new TeleportTransition(level, pos, Vec3.ZERO, player.getYRot(),
+                player.getXRot(), Set.of(), TeleportTransition.DO_NOTHING)));
         player.resetFallDistance();
     }
 

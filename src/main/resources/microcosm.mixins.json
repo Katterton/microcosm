@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "dev.microcosm.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "IngredientMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}

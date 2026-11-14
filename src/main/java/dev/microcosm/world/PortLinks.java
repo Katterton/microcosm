@@ -10,6 +10,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.capabilities.IBlockCapabilityProvider;
 import org.jspecify.annotations.Nullable;
@@ -115,12 +117,24 @@ public final class PortLinks {
         };
     }
 
-    /** Items crossing a port keep their absolute scale (see {@link ItemScales}); other capabilities pass as they are. */
+    /**
+     * Things crossing a port keep their worth: items keep their absolute scale, fluids and energy are converted
+     * 1 : 4096 per scale. Other capabilities pass as they are.
+     */
     @SuppressWarnings("unchecked")
     private static <T> @Nullable T scaled(BlockCapability<T, @Nullable Direction> capability, @Nullable T handler,
                                           int callerDepth, int ownerDepth) {
-        if (handler != null && capability == Capabilities.Item.BLOCK && callerDepth != ownerDepth) {
+        if (handler == null || callerDepth == ownerDepth) {
+            return handler;
+        }
+        if (capability == Capabilities.Item.BLOCK) {
             return (T) new ScaledItemHandler((ResourceHandler<ItemResource>) handler, callerDepth, ownerDepth);
+        }
+        if (capability == Capabilities.Fluid.BLOCK) {
+            return (T) new ScaledFluidHandler((ResourceHandler<FluidResource>) handler, callerDepth, ownerDepth);
+        }
+        if (capability == Capabilities.Energy.BLOCK) {
+            return (T) new ScaledEnergyHandler((EnergyHandler) handler, callerDepth, ownerDepth);
         }
         return handler;
     }
