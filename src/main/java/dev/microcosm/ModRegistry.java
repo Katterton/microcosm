@@ -38,7 +38,8 @@ public final class ModRegistry {
     /** Unbreakable boundary between a room and empty space. Not obtainable. */
     public static final DeferredBlock<Block> CELL_WALL = BLOCKS.registerSimpleBlock("cell_wall",
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1f, 3600000f).noLootTable()
-                    .pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, pos, type) -> false));
+                    .pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, pos, type) -> false)
+                    .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
 
     /** Connects a room side to the matching side of its cell (capabilities and redstone). */
     public static final DeferredBlock<PortBlock> PORT = BLOCKS.registerBlock("port", PortBlock::new,

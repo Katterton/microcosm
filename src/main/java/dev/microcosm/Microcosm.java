@@ -6,7 +6,9 @@ import dev.microcosm.fabrication.FabricationHandler;
 import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.device.ViewerSessions;
 import dev.microcosm.fabrication.RecipeDisplay;
+import dev.microcosm.network.OutsideViewPayload;
 import dev.microcosm.network.RecipeSyncPayload;
+import dev.microcosm.world.OutsideViews;
 import dev.microcosm.network.ViewPayload;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -57,6 +59,7 @@ public class Microcosm {
         modBus.addListener(RegisterPayloadHandlersEvent.class, e -> e.registrar("1")
                 .playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC)
                 .playToClient(RecipeSyncPayload.TYPE, RecipeSyncPayload.STREAM_CODEC)
+                .playToClient(OutsideViewPayload.TYPE, OutsideViewPayload.STREAM_CODEC)
                 .playToServer(ViewerRequestPayload.TYPE, ViewerRequestPayload.STREAM_CODEC,
                         (payload, context) -> ViewerSessions.handle((ServerPlayer) context.player(), payload)));
         modBus.addListener(RegisterTicketControllersEvent.class, e -> e.register(RoomManager.TICKETS));
@@ -76,6 +79,7 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(ServerTickEvent.Post.class, e -> {
             ViewerSessions.onServerTick(e.getServer());
             ShiftManager.onServerTick(e.getServer());
+            OutsideViews.onServerTick(e.getServer());
         });
     }
 

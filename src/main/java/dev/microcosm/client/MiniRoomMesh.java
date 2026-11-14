@@ -38,7 +38,18 @@ final class MiniRoomMesh {
     private static final Map<BlockState, FaceTexture[]> TEXTURES = new IdentityHashMap<>();
     private static @Nullable BlockStateModelSet texturesFor;
 
-    private record FaceTexture(TextureAtlasSprite sprite, int color) {}
+    /** Texture and tint of one block face. */
+    record FaceTexture(TextureAtlasSprite sprite, int color) {}
+
+    /** The textures of all six faces of {@code state} with the current resource packs, cached. */
+    static FaceTexture[] texturesOf(BlockState state) {
+        BlockStateModelSet models = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
+        if (texturesFor != models) {
+            TEXTURES.clear();
+            texturesFor = models;
+        }
+        return TEXTURES.computeIfAbsent(state, s -> textures(s, models));
+    }
 
     private MiniRoomMesh(float[] faces, int count, BlockStateModelSet models, int version) {
         this.faces = faces;
@@ -67,10 +78,6 @@ final class MiniRoomMesh {
     }
 
     private static MiniRoomMesh build(int[] preview, BlockStateModelSet models, int version) {
-        if (texturesFor != models) {
-            TEXTURES.clear();
-            texturesFor = models;
-        }
         BlockState[] states = new BlockState[preview.length];
         for (int i = 0; i < preview.length; i++) {
             states[i] = Block.stateById(preview[i]);
@@ -84,7 +91,7 @@ final class MiniRoomMesh {
                     if (state.isAir()) {
                         continue;
                     }
-                    FaceTexture[] textures = TEXTURES.computeIfAbsent(state, s -> textures(s, models));
+                    FaceTexture[] textures = texturesOf(state);
                     for (Direction dir : Direction.values()) {
                         int nx = x + dir.getStepX();
                         int ny = y + dir.getStepY();
@@ -176,26 +183,24 @@ final class MiniRoomMesh {
         Direction[] dirs = Direction.values();
         for (int f = 0; f < count; f++) {
             int o = f * 9;
-            float x = faces[o];
-            float y = faces[o + 1];
-            float z = faces[o + 2];
-            Direction dir = dirs[(int) faces[o + 3]];
-            float u0 = faces[o + 4];
-            float v0 = faces[o + 5];
-            float u1 = faces[o + 6];
-            float v1 = faces[o + 7];
-            int color = Float.floatToRawIntBits(faces[o + 8]);
-            float[][] corners = CORNERS[dir.ordinal()];
-            float[] us = {u0, u0, u1, u1};
-            float[] vs = {v0, v1, v1, v0};
-            for (int i = 0; i < 4; i++) {
-                buffer.addVertex(pose, x + corners[i][0], y + corners[i][1], z + corners[i][2])
-                        .setColor(color)
-                        .setUv(us[i], vs[i])
-                        .setOverlay(OverlayTexture.NO_OVERLAY)
-                        .setLight(light)
-                        .setNormal(pose, dir.getStepX(), dir.getStepY(), dir.getStepZ());
-            }
+            face(pose, buffer, faces[o], faces[o + 1], faces[o + 2], 1, dirs[(int) faces[o + 3]],
+                    faces[o + 4], faces[o + 5], faces[o + 6], faces[o + 7], Float.floatToRawIntBits(faces[o + 8]), light);
+        }
+    }
+
+    /** One textured face of an axis-aligned cube at (x, y, z) with edge length {@code size}. */
+    static void face(PoseStack.Pose pose, VertexConsumer buffer, float x, float y, float z, float size, Direction dir,
+                     float u0, float v0, float u1, float v1, int color, int light) {
+        float[][] corners = CORNERS[dir.ordinal()];
+        float[] us = {u0, u0, u1, u1};
+        float[] vs = {v0, v1, v1, v0};
+        for (int i = 0; i < 4; i++) {
+            buffer.addVertex(pose, x + corners[i][0] * size, y + corners[i][1] * size, z + corners[i][2] * size)
+                    .setColor(color)
+                    .setUv(us[i], vs[i])
+                    .setOverlay(OverlayTexture.NO_OVERLAY)
+                    .setLight(light)
+                    .setNormal(pose, dir.getStepX(), dir.getStepY(), dir.getStepZ());
         }
     }
 }

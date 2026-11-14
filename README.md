@@ -10,7 +10,7 @@ with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.2.0)
+## Features (v0.3.0)
 
 ### Cells and rooms
 
@@ -25,6 +25,10 @@ with whatever mods your pack provides.
   with the blocks' own face textures. The server checks rooms for changes about once per second
   (`preview_interval_ticks` in the server config, 0 turns miniatures off) and only sends updates when something
   changed.
+- **Looking out:** from inside a room you see the world around its cell one level up, 16 times enlarged: each of
+  those blocks is a 16×16×16 block around the room, so one texture pixel is one room block. The room walls are a
+  see-through grid. Neighbouring cells in the same section show their real rooms instead, since the mirrored layout
+  puts them exactly there. `outside_view_radius` in the server config sets how far (default 4 blocks, 0 = off).
 
 ### Ports
 

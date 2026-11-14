@@ -3,6 +3,6 @@
   "textures": {
     "side": "microcosm:block/manipulator_arm_side",
     "top": "microcosm:block/manipulator_arm_top",
-    "bottom": "microcosm:block/cell_wall"
+    "bottom": "microcosm:block/device_bottom"
   }
 }
