@@ -2,6 +2,7 @@ package dev.microcosm;
 
 import dev.microcosm.block.CellBlock;
 import dev.microcosm.block.CellBlockEntity;
+import dev.microcosm.block.CellWallBlock;
 import dev.microcosm.block.PortBlock;
 import dev.microcosm.device.DeviceBlock;
 import dev.microcosm.device.DeviceBlockEntity;
@@ -36,7 +37,7 @@ public final class ModRegistry {
                     .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));
 
     /** Unbreakable boundary between a room and empty space. Not obtainable. */
-    public static final DeferredBlock<Block> CELL_WALL = BLOCKS.registerSimpleBlock("cell_wall",
+    public static final DeferredBlock<CellWallBlock> CELL_WALL = BLOCKS.registerBlock("cell_wall", CellWallBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1f, 3600000f).noLootTable()
                     .pushReaction(PushReaction.BLOCK).isValidSpawn((s, l, pos, type) -> false)
                     .noOcclusion().isViewBlocking((s, l, pos) -> false).isSuffocating((s, l, pos) -> false));

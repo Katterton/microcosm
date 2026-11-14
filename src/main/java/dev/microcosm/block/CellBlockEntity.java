@@ -40,6 +40,8 @@ public class CellBlockEntity extends BlockEntity {
     private int previewHash;
     /** Bumped whenever the client receives a new preview, so renderers can rebuild their mesh. */
     private int previewVersion;
+    /** Walls from older versions have no connections yet; they are fixed once per load. */
+    private boolean wallsRefreshed;
 
     public CellBlockEntity(BlockPos pos, BlockState state) {
         super(ModRegistry.CELL_BLOCK_ENTITY.get(), pos, state);
@@ -88,6 +90,13 @@ public class CellBlockEntity extends BlockEntity {
 
     /** Server: re-captures the room and, if it changed, sends the new miniature to nearby players. */
     void serverTick(ServerLevel level) {
+        if (!wallsRefreshed) {
+            wallsRefreshed = true;
+            RoomManager.Room room = RoomManager.roomOf(level, worldPosition, false);
+            if (room != null) {
+                RoomManager.refreshWalls(room);
+            }
+        }
         int interval = MicrocosmConfig.PREVIEW_INTERVAL.getAsInt();
         if (interval <= 0 || (level.getGameTime() + worldPosition.asLong()) % interval != 0) {
             return;

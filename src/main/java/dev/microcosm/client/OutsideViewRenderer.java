@@ -67,7 +67,8 @@ public final class OutsideViewRenderer {
         poseStack.pushPose();
         BlockPos origin = current.roomOrigin();
         poseStack.translate(origin.getX() - camera.x, origin.getY() - camera.y, origin.getZ() - camera.z);
-        int light = LightCoordsUtil.FULL_BRIGHT;
+        // Full sky light, so the lightmap darkens the enlarged world at night like the real one.
+        int light = LightCoordsUtil.pack(0, 15);
         event.getSubmitNodeCollector().submitCustomGeometry(poseStack, RENDER_TYPE, (pose, buffer) -> {
             for (Face face : list) {
                 TextureAtlasSprite sprite = face.sprite;

@@ -5,6 +5,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.microcosm.Microcosm;
 import dev.microcosm.ModRegistry;
 import dev.microcosm.block.CellBlock;
+import dev.microcosm.block.CellWallBlock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -168,7 +169,6 @@ public final class RoomManager extends SavedData {
         if (room == null) {
             return;
         }
-        BlockState wall = ModRegistry.CELL_WALL.get().defaultBlockState();
         // Walls that used to separate this (inactive) slot from active neighbours sit on its inner faces.
         for (Direction dir : Direction.values()) {
             for (BlockPos p : innerFace(room, dir)) {
@@ -181,7 +181,7 @@ public final class RoomManager extends SavedData {
         for (Direction dir : Direction.values()) {
             if (!connected(parent, pos, dir)) {
                 for (BlockPos p : outerFace(room, dir)) {
-                    room.level.setBlock(p, wall, Block.UPDATE_CLIENTS);
+                    placeWall(room.level, p);
                 }
             }
         }
@@ -192,12 +192,32 @@ public final class RoomManager extends SavedData {
         if (room == null) {
             return;
         }
-        BlockState wall = ModRegistry.CELL_WALL.get().defaultBlockState();
         // Close the openings into rooms of neighbouring cells that still exist.
         for (Direction dir : Direction.values()) {
             if (connected(parent, pos, dir)) {
                 for (BlockPos p : innerFace(room, dir)) {
-                    room.level.setBlock(p, wall, Block.UPDATE_CLIENTS);
+                    placeWall(room.level, p);
+                }
+            }
+        }
+    }
+
+    /** Places a wall block already connected to the walls around it; neighbours update themselves. */
+    private static void placeWall(ServerLevel level, BlockPos pos) {
+        level.setBlock(pos.immutable(), ModRegistry.CELL_WALL.get().connectedState(level, pos), Block.UPDATE_CLIENTS);
+    }
+
+    /** Re-connects the walls around a room, for walls placed before they had connections. */
+    public static void refreshWalls(Room room) {
+        CellWallBlock wall = ModRegistry.CELL_WALL.get();
+        for (Direction dir : Direction.values()) {
+            for (BlockPos p : outerFace(room, dir)) {
+                BlockState state = room.level.getBlockState(p);
+                if (state.getBlock() == wall) {
+                    BlockState connected = wall.connectedState(room.level, p);
+                    if (connected != state) {
+                        room.level.setBlock(p.immutable(), connected, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                    }
                 }
             }
         }
