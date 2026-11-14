@@ -2,6 +2,7 @@
 
 | Version | Minecraft | NeoForge | File | SHA-256 |
 |---|---|---|---|---|
+| 0.7.1 | 26.1.2 | 26.1.2.126+ | [microcosm-0.7.1.jar](microcosm-0.7.1.jar) | `4f3b50d0b2954056a9c952665fa3c6e256ff0d66345ce7363754a44074217917` |
 | 0.7.0 | 26.1.2 | 26.1.2.126+ | [microcosm-0.7.0.jar](microcosm-0.7.0.jar) | `abed2300b849eb799bd642ea2fdcda612cd826615d85e46d7332d1dc0b178b9c` |
 | 0.6.0 | 26.1.2 | 26.1.2.126+ | [microcosm-0.6.0.jar](microcosm-0.6.0.jar) | `21b977e75c4b6e6610c0ed833d6b78db230018f7a2fb10c1c7d9e8d33c0b34d1` |
 | 0.5.0 | 26.1.2 | 26.1.2.126+ | [microcosm-0.5.0.jar](microcosm-0.5.0.jar) | `54e32941dec53c07b8d9b9aaa3e3385f02814e754dd593b893fefe02abcd882f` |
