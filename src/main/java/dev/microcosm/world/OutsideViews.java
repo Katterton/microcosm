@@ -38,8 +38,7 @@ public final class OutsideViews {
     private static void update(ServerPlayer player, int radius) {
         ServerLevel level = player.level();
         RoomManager.Parent parent = radius > 0 ? RoomManager.parentOf(level, player.blockPosition()) : null;
-        RoomGeometry.Slot slot = RoomGeometry.slotAt(player.blockPosition());
-        if (parent == null || slot == null) {
+        if (parent == null) {
             if (SENT.remove(player.getUUID()) != null) {
                 PacketDistributor.sendToPlayer(player, OutsideViewPayload.clear());
             }
@@ -58,7 +57,7 @@ public final class OutsideViews {
                 }
             }
         }
-        BlockPos origin = slot.origin();
+        BlockPos origin = RoomGeometry.slotOrigin(player.blockPosition());
         Sent sent = new Sent(origin, Objects.hash(Arrays.hashCode(states), parent.pos(), radius));
         if (!sent.equals(SENT.get(player.getUUID()))) {
             SENT.put(player.getUUID(), sent);

@@ -24,12 +24,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.world.chunk.TicketController;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Allocates regions in the microcosm levels, keeps room walls in sync with which cells exist, and keeps rooms
- * loaded while their cell is loaded.
+ * Hands out pool dimensions to tiles, keeps room walls in sync with which blocks are divided, and keeps rooms
+ * loaded while their block is loaded.
  */
 public final class RoomManager extends SavedData {
     /**
@@ -39,58 +40,65 @@ public final class RoomManager extends SavedData {
     public static final TicketController TICKETS = new TicketController(Microcosm.id("rooms"), (level, helper) ->
             new ArrayList<>(helper.getBlockTickets().keySet()).forEach(helper::removeAllTickets));
 
-    private record Region(Identifier parentDimension, int sectionX, int sectionY, int sectionZ, int childDepth, int index) {
-        static final Codec<Region> CODEC = RecordCodecBuilder.create(i -> i.group(
-                Identifier.CODEC.fieldOf("parent").forGetter(Region::parentDimension),
-                Codec.INT.fieldOf("sx").forGetter(Region::sectionX),
-                Codec.INT.fieldOf("sy").forGetter(Region::sectionY),
-                Codec.INT.fieldOf("sz").forGetter(Region::sectionZ),
-                Codec.INT.fieldOf("depth").forGetter(Region::childDepth),
-                Codec.INT.fieldOf("index").forGetter(Region::index)
-        ).apply(i, Region::new));
+    /** One tile of a parent level, mapped to a pool dimension. */
+    private record Tile(Identifier parentDimension, int x, int y, int z, int depth, int slot) {
+        static final Codec<Tile> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Identifier.CODEC.fieldOf("parent").forGetter(Tile::parentDimension),
+                Codec.INT.fieldOf("x").forGetter(Tile::x),
+                Codec.INT.fieldOf("y").forGetter(Tile::y),
+                Codec.INT.fieldOf("z").forGetter(Tile::z),
+                Codec.INT.fieldOf("depth").forGetter(Tile::depth),
+                Codec.INT.fieldOf("slot").forGetter(Tile::slot)
+        ).apply(i, Tile::new));
 
-        String key() {
-            return key(parentDimension, sectionX, sectionY, sectionZ);
+        RoomGeometry.TileKey key() {
+            return new RoomGeometry.TileKey(x, y, z);
         }
 
-        static String key(Identifier dim, int sx, int sy, int sz) {
-            return dim + "|" + sx + "|" + sy + "|" + sz;
+        String id() {
+            return id(parentDimension, key());
+        }
+
+        static String id(Identifier dim, RoomGeometry.TileKey key) {
+            return dim + "|" + key.x() + "|" + key.y() + "|" + key.z();
         }
     }
 
-    private static final Codec<RoomManager> CODEC = Region.CODEC.listOf()
-            .xmap(RoomManager::new, m -> m.regions).fieldOf("regions").codec();
+    private static final Codec<RoomManager> CODEC = Tile.CODEC.listOf()
+            .xmap(RoomManager::new, m -> m.tiles).fieldOf("tiles").codec();
 
     private static final SavedDataType<RoomManager> TYPE =
             new SavedDataType<>(Microcosm.id("rooms"), RoomManager::new, CODEC);
 
-    private final List<Region> regions = new ArrayList<>();
-    private final Map<String, Region> byParentSection = new HashMap<>();
-    private final Map<Long, Region> byChildIndex = new HashMap<>();
-    private final int[] nextIndex = new int[MicrocosmLevels.MAX_DEPTH + 1];
+    private final List<Tile> tiles = new ArrayList<>();
+    private final Map<String, Tile> byParentTile = new HashMap<>();
+    private final Map<Integer, Tile> bySlot = new HashMap<>();
 
     private RoomManager() {}
 
-    private RoomManager(List<Region> loaded) {
+    private RoomManager(List<Tile> loaded) {
         loaded.forEach(this::index);
     }
 
-    private void index(Region region) {
-        regions.add(region);
-        byParentSection.put(region.key(), region);
-        byChildIndex.put(childKey(region.childDepth, region.index), region);
-        nextIndex[region.childDepth] = Math.max(nextIndex[region.childDepth], region.index + 1);
-    }
-
-    private static long childKey(int depth, int index) {
-        return ((long) depth << 32) | (index & 0xFFFFFFFFL);
+    private void index(Tile tile) {
+        tiles.add(tile);
+        byParentTile.put(tile.id(), tile);
+        bySlot.put(tile.slot, tile);
+        MicrocosmLevels.setDepth(MicrocosmLevels.poolKey(tile.slot), tile.depth);
     }
 
     public static RoomManager get(MinecraftServer server) {
         return server.getDataStorage().computeIfAbsent(TYPE);
     }
 
-    /** A cell's room: the level it is in and the minimum corner of its 16x16x16 space. */
+    /** Loads the tile assignments, so depths are known from the start. */
+    public static void load(MinecraftServer server) {
+        MicrocosmLevels.setAll(Map.of());
+        RoomManager manager = get(server);
+        manager.tiles.forEach(t -> MicrocosmLevels.setDepth(MicrocosmLevels.poolKey(t.slot), t.depth));
+    }
+
+    /** A block's room: the level it is in and the minimum corner of its 16x16x16 space. */
     public record Room(ServerLevel level, BlockPos origin) {
         public BlockPos max() {
             return origin.offset(RoomGeometry.ROOM - 1, RoomGeometry.ROOM - 1, RoomGeometry.ROOM - 1);
@@ -105,63 +113,88 @@ public final class RoomManager extends SavedData {
         }
     }
 
-    /** Where a room's cell is, one level up. */
+    /** Where a room's block is, one level up. */
     public record Parent(ServerLevel level, BlockPos pos) {}
 
-    /** The room of the cell at {@code pos}, or null at the deepest level or if none was allocated yet. */
+    /**
+     * The room of the block at {@code pos}, or null at the deepest level, if its tile has no dimension yet and
+     * {@code allocate} is false, or if the pool is used up.
+     */
     public static @Nullable Room roomOf(ServerLevel parent, BlockPos pos, boolean allocate) {
-        ServerLevel child = MicrocosmLevels.childOf(parent);
-        if (child == null) {
+        int depth = MicrocosmLevels.depth(parent) + 1;
+        if (depth > MicrocosmLevels.MAX_DEPTH) {
             return null;
         }
-        RoomManager manager = get(parent.getServer());
-        Identifier dim = parent.dimension().identifier();
-        int sx = SectionPos.blockToSectionCoord(pos.getX());
-        int sy = SectionPos.blockToSectionCoord(pos.getY());
-        int sz = SectionPos.blockToSectionCoord(pos.getZ());
-        Region region = manager.byParentSection.get(Region.key(dim, sx, sy, sz));
-        if (region == null) {
+        MinecraftServer server = parent.getServer();
+        RoomManager manager = get(server);
+        RoomGeometry.TileKey key = RoomGeometry.TileKey.of(pos);
+        Tile tile = manager.byParentTile.get(Tile.id(parent.dimension().identifier(), key));
+        if (tile == null) {
             if (!allocate) {
                 return null;
             }
-            int depth = MicrocosmLevels.depth(child);
-            region = new Region(dim, sx, sy, sz, depth, manager.nextIndex[depth]);
-            manager.index(region);
-            manager.setDirty();
+            tile = manager.allocate(server, parent.dimension().identifier(), key, depth);
+            if (tile == null) {
+                return null;
+            }
         }
-        return new Room(child, RoomGeometry.roomOrigin(region.index, pos));
+        ServerLevel child = server.getLevel(MicrocosmLevels.poolKey(tile.slot));
+        return child == null ? null : new Room(child, RoomGeometry.roomOrigin(key, pos));
     }
 
-    /** The cell that owns the room containing {@code pos}, if any. */
+    /** Hands a free pool dimension to a tile. */
+    private @Nullable Tile allocate(MinecraftServer server, Identifier parentDim, RoomGeometry.TileKey key, int depth) {
+        for (int slot = 0; ; slot++) {
+            if (server.getLevel(MicrocosmLevels.poolKey(slot)) == null) {
+                Microcosm.LOGGER.warn("All {} microcosm pool dimensions are in use; add more pool dimensions to allow more", slot);
+                return null;
+            }
+            if (!bySlot.containsKey(slot)) {
+                Tile tile = new Tile(parentDim, key.x(), key.y(), key.z(), depth, slot);
+                index(tile);
+                setDirty();
+                PoolSync.broadcast(server);
+                return tile;
+            }
+        }
+    }
+
+    /** The block that owns the room containing {@code pos}, if any (also for positions just outside the tile). */
     public static @Nullable Parent parentOf(ServerLevel child, BlockPos pos) {
-        int depth = MicrocosmLevels.depth(child);
-        RoomGeometry.Slot slot = RoomGeometry.slotAt(pos);
-        if (depth == 0 || slot == null) {
+        int slot = MicrocosmLevels.poolSlot(child.dimension());
+        Tile tile = slot < 0 ? null : get(child.getServer()).bySlot.get(slot);
+        if (tile == null) {
             return null;
         }
-        Region region = get(child.getServer()).byChildIndex.get(childKey(depth, slot.regionIndex()));
-        if (region == null) {
-            return null;
-        }
-        ServerLevel parent = child.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, region.parentDimension));
-        if (parent == null) {
-            return null;
-        }
-        BlockPos cellPos = new BlockPos(
-                SectionPos.sectionToBlockCoord(region.sectionX) + slot.x(),
-                SectionPos.sectionToBlockCoord(region.sectionY) + slot.y(),
-                SectionPos.sectionToBlockCoord(region.sectionZ) + slot.z());
-        return new Parent(parent, cellPos);
+        ServerLevel parent = child.getServer().getLevel(ResourceKey.create(Registries.DIMENSION, tile.parentDimension));
+        return parent == null ? null : new Parent(parent, RoomGeometry.parentPos(tile.key(), pos));
+    }
+
+    /** The exact position one level up that corresponds to {@code pos} here, for moving players between tiles. */
+    public static @Nullable Vec3 parentVec(ServerLevel child, Vec3 pos) {
+        int slot = MicrocosmLevels.poolSlot(child.dimension());
+        Tile tile = slot < 0 ? null : get(child.getServer()).bySlot.get(slot);
+        return tile == null ? null : RoomGeometry.parentVec(tile.key(), pos);
+    }
+
+    /** The exact room position for parent position {@code parentPos}, in the dimension of its tile. */
+    public static @Nullable Room roomAt(ServerLevel parent, Vec3 parentPos, boolean allocate) {
+        return roomOf(parent, BlockPos.containing(parentPos), allocate);
+    }
+
+    public static Vec3 childVec(Room room, ServerLevel parent, Vec3 parentPos) {
+        BlockPos block = BlockPos.containing(parentPos);
+        return Vec3.atLowerCornerOf(room.origin()).add(parentPos.subtract(Vec3.atLowerCornerOf(block)).scale(RoomGeometry.ROOM));
     }
 
     private static boolean isCell(Level level, BlockPos pos) {
         return level.getBlockState(pos).getBlock() instanceof CellBlock;
     }
 
-    /** Neighbouring cells in the same section have rooms that touch, so the wall between them is left open. */
+    /** Neighbouring blocks in the same tile have rooms that touch, so the wall between them is left open. */
     private static boolean connected(Level parent, BlockPos pos, Direction dir) {
         BlockPos neighbor = pos.relative(dir);
-        return RoomGeometry.sameSection(pos, neighbor) && isCell(parent, neighbor);
+        return RoomGeometry.sameTile(pos, neighbor) && isCell(parent, neighbor);
     }
 
     public static void onCellPlaced(ServerLevel parent, BlockPos pos) {
@@ -177,11 +210,13 @@ public final class RoomManager extends SavedData {
                 }
             }
         }
-        // Wall off every side that does not lead into a neighbouring room.
+        // Wall off every side that does not lead into a neighbouring room. Walls at the tile border let players
+        // through: they are moved on to the next tile.
         for (Direction dir : Direction.values()) {
             if (!connected(parent, pos, dir)) {
+                boolean border = !RoomGeometry.sameTile(pos, pos.relative(dir));
                 for (BlockPos p : outerFace(room, dir)) {
-                    placeWall(room.level, p);
+                    placeWall(room.level, p, border);
                 }
             }
         }
@@ -196,15 +231,16 @@ public final class RoomManager extends SavedData {
         for (Direction dir : Direction.values()) {
             if (connected(parent, pos, dir)) {
                 for (BlockPos p : innerFace(room, dir)) {
-                    placeWall(room.level, p);
+                    placeWall(room.level, p, false);
                 }
             }
         }
     }
 
     /** Places a wall block already connected to the walls around it; neighbours update themselves. */
-    private static void placeWall(ServerLevel level, BlockPos pos) {
-        level.setBlock(pos.immutable(), ModRegistry.CELL_WALL.get().connectedState(level, pos), Block.UPDATE_CLIENTS);
+    private static void placeWall(ServerLevel level, BlockPos pos, boolean passable) {
+        BlockState wall = ModRegistry.CELL_WALL.get().connectedState(level, pos).setValue(CellWallBlock.PASSABLE, passable);
+        level.setBlock(pos.immutable(), wall, Block.UPDATE_CLIENTS);
     }
 
     /** Re-connects the walls around a room, for walls placed before they had connections. */
@@ -214,7 +250,7 @@ public final class RoomManager extends SavedData {
             for (BlockPos p : outerFace(room, dir)) {
                 BlockState state = room.level.getBlockState(p);
                 if (state.getBlock() == wall) {
-                    BlockState connected = wall.connectedState(room.level, p);
+                    BlockState connected = wall.connectedState(room.level, p).setValue(CellWallBlock.PASSABLE, state.getValue(CellWallBlock.PASSABLE));
                     if (connected != state) {
                         room.level.setBlock(p.immutable(), connected, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
                     }

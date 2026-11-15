@@ -7,6 +7,11 @@ import dev.microcosm.fabrication.FabricationRecipes;
 import dev.microcosm.device.ViewerSessions;
 import dev.microcosm.fabrication.RecipeDisplay;
 import dev.microcosm.network.OutsideViewPayload;
+import dev.microcosm.network.PoolSyncPayload;
+import dev.microcosm.world.PoolSync;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import dev.microcosm.network.RecipeSyncPayload;
 import dev.microcosm.world.OutsideViews;
 import dev.microcosm.network.ViewPayload;
@@ -55,6 +60,7 @@ import net.neoforged.neoforge.common.world.chunk.RegisterTicketControllersEvent;
 @Mod(Microcosm.MODID)
 public class Microcosm {
     public static final String MODID = "microcosm";
+    public static final org.slf4j.Logger LOGGER = com.mojang.logging.LogUtils.getLogger();
 
     public static Identifier id(String path) {
         return Identifier.fromNamespaceAndPath(MODID, path);
@@ -67,6 +73,7 @@ public class Microcosm {
                 .playToClient(ViewPayload.TYPE, ViewPayload.STREAM_CODEC)
                 .playToClient(RecipeSyncPayload.TYPE, RecipeSyncPayload.STREAM_CODEC)
                 .playToClient(OutsideViewPayload.TYPE, OutsideViewPayload.STREAM_CODEC)
+                .playToClient(PoolSyncPayload.TYPE, PoolSyncPayload.STREAM_CODEC)
                 .playToServer(ViewerRequestPayload.TYPE, ViewerRequestPayload.STREAM_CODEC,
                         (payload, context) -> ViewerSessions.handle((ServerPlayer) context.player(), payload)));
         modBus.addListener(RegisterTicketControllersEvent.class, e -> e.register(RoomManager.TICKETS));
@@ -80,6 +87,13 @@ public class Microcosm {
         NeoForge.EVENT_BUS.addListener(PlayerInteractEvent.RightClickBlock.class, FabricationHandler::onRightClickBlock);
         NeoForge.EVENT_BUS.addListener(BreakBlockEvent.class, Microcosm::onBreak);
         ScaleRules.register();
+        NeoForge.EVENT_BUS.addListener(ServerStartingEvent.class, e -> RoomManager.load(e.getServer()));
+        NeoForge.EVENT_BUS.addListener(ServerStoppedEvent.class, e -> MicrocosmLevels.setAll(java.util.Map.of()));
+        NeoForge.EVENT_BUS.addListener(PlayerEvent.PlayerLoggedInEvent.class, e -> {
+            if (e.getEntity() instanceof ServerPlayer player) {
+                PoolSync.send(player);
+            }
+        });
         DynamicWalls.register();
         NeoForge.EVENT_BUS.addListener(BlockEvent.EntityPlaceEvent.class, Microcosm::onPlace);
         NeoForge.EVENT_BUS.addListener(OnDatapackSyncEvent.class, e -> {

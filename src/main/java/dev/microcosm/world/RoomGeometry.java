@@ -1,60 +1,76 @@
 package dev.microcosm.world;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.SectionPos;
-import org.jspecify.annotations.Nullable;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * Coordinate layout of a microcosm level.
+ * Coordinate layout of the microcosm.
  *
- * <p>Every 16x16x16 section of a parent level that contains a cell gets a region of 256x256x256 blocks in the
- * child level. Inside that region each cell's room sits at the same relative position as the cell sits inside
- * its section, so cells that touch in the parent level have rooms that touch in the child level. Regions are
- * laid out on a grid with a gap between them, which holds the boundary walls.</p>
+ * <p>Each level one scale down mirrors the level above 16 times enlarged, contiguously: the room of the block at
+ * parent position {@code p} starts at {@code (p - tileOrigin) * 16}. So neighbouring blocks have neighbouring rooms,
+ * and walking, redstone, water or ender pearls cross from room to room as they would in the world above.</p>
+ *
+ * <p>Because a dimension is at most 4064 blocks tall, the parent world is cut into tiles of
+ * {@link #TILE_WIDTH} x {@link #TILE_HEIGHT} x {@link #TILE_WIDTH} blocks; each tile in use gets one dimension from
+ * a pool. Players pass from tile to tile at the borders.</p>
  */
 public final class RoomGeometry {
     public static final int ROOM = 16;
-    public static final int REGION = ROOM * 16;
-    public static final int SPACING = REGION + 32;
-    public static final int GRID = 64;
+    /** Parent blocks per tile horizontally (1 048 576 room blocks wide). */
+    public static final int TILE_WIDTH = 1 << 16;
+    /** Parent blocks per tile vertically: 2016 room blocks plus a wall above and below fit the 2048-block limit of a dimension. */
+    public static final int TILE_HEIGHT = 126;
 
     private RoomGeometry() {}
 
-    public static BlockPos regionOrigin(int regionIndex) {
-        return new BlockPos((regionIndex % GRID) * SPACING, 0, (regionIndex / GRID) * SPACING);
-    }
+    /** Identifies one tile of a parent level. */
+    public record TileKey(int x, int y, int z) {
+        public static TileKey of(BlockPos parentPos) {
+            return new TileKey(Math.floorDiv(parentPos.getX(), TILE_WIDTH), Math.floorDiv(parentPos.getY(), TILE_HEIGHT),
+                    Math.floorDiv(parentPos.getZ(), TILE_WIDTH));
+        }
 
-    /** Origin (minimum corner) of the room belonging to the cell at {@code parentPos}. */
-    public static BlockPos roomOrigin(int regionIndex, BlockPos parentPos) {
-        return regionOrigin(regionIndex).offset(
-                (parentPos.getX() & 15) * ROOM, (parentPos.getY() & 15) * ROOM, (parentPos.getZ() & 15) * ROOM);
-    }
-
-    public static boolean sameSection(BlockPos a, BlockPos b) {
-        return SectionPos.blockToSectionCoord(a.getX()) == SectionPos.blockToSectionCoord(b.getX())
-                && SectionPos.blockToSectionCoord(a.getY()) == SectionPos.blockToSectionCoord(b.getY())
-                && SectionPos.blockToSectionCoord(a.getZ()) == SectionPos.blockToSectionCoord(b.getZ());
-    }
-
-    /** A room slot inside a region: region index plus slot coordinates 0..15 on each axis. */
-    public record Slot(int regionIndex, int x, int y, int z) {
+        /** Parent position of the tile's minimum corner. */
         public BlockPos origin() {
-            return regionOrigin(regionIndex).offset(x * ROOM, y * ROOM, z * ROOM);
+            return new BlockPos(x * TILE_WIDTH, y * TILE_HEIGHT, z * TILE_WIDTH);
         }
     }
 
-    /** Which room slot a child-level position lies in, or null if it is in the gap between regions. */
-    public static @Nullable Slot slotAt(BlockPos pos) {
-        int ix = Math.floorDiv(pos.getX(), SPACING);
-        int iz = Math.floorDiv(pos.getZ(), SPACING);
-        if (ix < 0 || ix >= GRID || iz < 0 || pos.getY() < 0 || pos.getY() >= REGION) {
-            return null;
-        }
-        int lx = pos.getX() - ix * SPACING;
-        int lz = pos.getZ() - iz * SPACING;
-        if (lx >= REGION || lz >= REGION) {
-            return null;
-        }
-        return new Slot(iz * GRID + ix, lx / ROOM, pos.getY() / ROOM, lz / ROOM);
+    /** Minimum corner of the room of {@code parentPos} in its tile's dimension. */
+    public static BlockPos roomOrigin(TileKey tile, BlockPos parentPos) {
+        return parentPos.subtract(tile.origin()).multiply(ROOM);
+    }
+
+    /** The parent block whose room contains {@code childPos} (also outside the tile, for its neighbours). */
+    public static BlockPos parentPos(TileKey tile, BlockPos childPos) {
+        return tile.origin().offset(Math.floorDiv(childPos.getX(), ROOM), Math.floorDiv(childPos.getY(), ROOM),
+                Math.floorDiv(childPos.getZ(), ROOM));
+    }
+
+    /** {@link #parentPos} for exact positions, in parent block units. */
+    public static Vec3 parentVec(TileKey tile, Vec3 childPos) {
+        return Vec3.atLowerCornerOf(tile.origin()).add(childPos.scale(1.0 / ROOM));
+    }
+
+    public static Vec3 childVec(TileKey tile, Vec3 parentPos) {
+        return parentPos.subtract(Vec3.atLowerCornerOf(tile.origin())).scale(ROOM);
+    }
+
+    /** Minimum corner of the room containing {@code childPos}. */
+    public static BlockPos slotOrigin(BlockPos childPos) {
+        return new BlockPos(Math.floorDiv(childPos.getX(), ROOM) * ROOM, Math.floorDiv(childPos.getY(), ROOM) * ROOM,
+                Math.floorDiv(childPos.getZ(), ROOM) * ROOM);
+    }
+
+    /** Whether a room position lies inside its tile (rather than in the border wall layer around it). */
+    public static boolean insideTile(Vec3 childPos) {
+        double width = (double) TILE_WIDTH * ROOM;
+        return childPos.x >= 0 && childPos.z >= 0 && childPos.y >= 0
+                && childPos.x < width && childPos.z < width && childPos.y < TILE_HEIGHT * ROOM;
+    }
+
+    /** Whether two parent blocks fall into the same tile, so their rooms touch. */
+    public static boolean sameTile(BlockPos a, BlockPos b) {
+        return TileKey.of(a).equals(TileKey.of(b));
     }
 }

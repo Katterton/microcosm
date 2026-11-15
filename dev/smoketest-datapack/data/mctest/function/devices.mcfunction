@@ -7,7 +7,7 @@ microcosm act 21 64 20 break 0 3 0 3
 # A normal stone block (slot 2) is 16 times too big for the room and must be refused
 microcosm act 21 64 20 place 2 6 0 6
 # Nested cell inside that room at local (8,0,8); its room is at (416,0,128) in level 2
-execute in microcosm:level_1 run setblock 360 0 72 microcosm:cell
+microcosm at 16 64 16 0 0 0 setblock ~72 ~0 ~72 microcosm:cell
 setblock 20 64 21 microcosm:nano_probe[facing=north]{energy:200000,Items:[{Slot:0b,id:"minecraft:gold_block",count:2,components:{"microcosm:scale":2}}]}
 microcosm act 20 64 21 place 0 1 0 1 8 0 8
 # The tier 1 arm must not reach level 2

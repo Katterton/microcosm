@@ -62,6 +62,12 @@ public final class MicrocosmCommands {
                     }
                     return 1;
                 }))
+                .then(Commands.literal("at")
+                        .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                .then(Commands.argument("x", IntegerArgumentType.integer())
+                                        .then(Commands.argument("y", IntegerArgumentType.integer())
+                                                .then(Commands.argument("z", IntegerArgumentType.integer())
+                                                        .fork(dispatcher.getRoot(), MicrocosmCommands::inRoom))))))
                 .then(Commands.literal("act")
                         .then(Commands.argument("actuator", BlockPosArgument.blockPos())
                                 .then(Commands.argument("type", StringArgumentType.word())
@@ -72,6 +78,25 @@ public final class MicrocosmCommands {
                                                                         .executes(c -> act(c, ""))
                                                                         .then(Commands.argument("nested", StringArgumentType.greedyString())
                                                                                 .executes(c -> act(c, StringArgumentType.getString(c, "nested"))))))))))));
+    }
+
+    /**
+     * {@code /microcosm at <pos> <x> <y> <z> <command>} runs a command inside the room of the block at {@code pos},
+     * positioned at the room-local block {@code x y z} (which may lie outside 0..15, in the neighbouring rooms).
+     * Chainable for nested rooms; tests use it so they do not depend on where rooms are laid out.
+     */
+    private static List<CommandSourceStack> inRoom(com.mojang.brigadier.context.CommandContext<CommandSourceStack> c)
+            throws CommandSyntaxException {
+        CommandSourceStack source = c.getSource();
+        BlockPos pos = BlockPosArgument.getBlockPos(c, "pos");
+        RoomManager.Room room = RoomManager.roomOf(source.getLevel(), pos, true);
+        if (room == null) {
+            source.sendFailure(Component.literal("No room for " + pos.toShortString()));
+            return List.of();
+        }
+        BlockPos at = room.origin().offset(IntegerArgumentType.getInteger(c, "x"),
+                IntegerArgumentType.getInteger(c, "y"), IntegerArgumentType.getInteger(c, "z"));
+        return List.of(source.withLevel(room.level()).withPosition(Vec3.atLowerCornerOf(at)));
     }
 
     /**

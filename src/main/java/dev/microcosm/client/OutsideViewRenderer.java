@@ -51,8 +51,7 @@ public final class OutsideViewRenderer {
                 || MicrocosmLevels.depth(minecraft.level) == 0) {
             return;
         }
-        RoomGeometry.Slot slot = RoomGeometry.slotAt(minecraft.player.blockPosition());
-        if (slot == null || !slot.origin().equals(current.roomOrigin())) {
+        if (!RoomGeometry.slotOrigin(minecraft.player.blockPosition()).equals(current.roomOrigin())) {
             return;
         }
         if (faces == null) {
@@ -116,10 +115,10 @@ public final class OutsideViewRenderer {
     }
 
     /**
-     * Cells in the same section as ours have their real rooms exactly where their enlarged block would be (the
-     * room layout mirrors the cells), so those are not drawn. That includes our own cell at offset 0.
+     * Divided blocks in the same tile as ours have their real rooms exactly where their enlarged block would be
+     * (the room layout mirrors the world above), so those are not drawn. That includes our own cell at offset 0.
      */
     private static boolean hasRealRoom(BlockPos cellPos, int dx, int dy, int dz, BlockState state) {
-        return state.getBlock() instanceof CellBlock && RoomGeometry.sameSection(cellPos, cellPos.offset(dx, dy, dz));
+        return state.getBlock() instanceof CellBlock && RoomGeometry.sameTile(cellPos, cellPos.offset(dx, dy, dz));
     }
 }

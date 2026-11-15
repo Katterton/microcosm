@@ -11,7 +11,7 @@ automated with whatever mods your pack provides.
 - Put `microcosm-<version>.jar` into the `mods` folder (client and server)
 - Optional: JEI 29.53+ to browse fabrication recipes
 
-## Features (v0.8.0)
+## Features (v0.9.0)
 
 ### Scales
 
@@ -64,18 +64,27 @@ Material must never change its worth by crossing a scale boundary. The mod enfor
 
 - **Every plain block is divisible:** any full block without a block entity can be opened up (exceptions can be
   added to the block tag `microcosm:indivisible`). Looking at it changes nothing; the first change inside it, or
-  entering it, divides it: it becomes a *Divided Block* whose room in `microcosm:level_1` is filled with 4096
-  microblocks of its material. Blocks inside a level-1 room have rooms in level 2, and so on down to level 3.
+  entering it, divides it: it becomes a *Divided Block* whose room is filled with 4096 microblocks of its material.
+  Blocks inside a Milliblock room have rooms one scale smaller, and so on down to Nanoblocks.
 - **Collapsing back:** when a room is uniform again (one material everywhere, or empty) and nothing is inside it,
   the Divided Block turns back into an ordinary block of that material, or into air.
-- **Mirrored layout:** divided blocks that touch each other within the same 16³ section have rooms that touch as
-  well, with no wall between them, so machines in neighbouring rooms can build into a room.
-- **Seamless between neighbours:** a wall between a room and a neighbouring block in the same 16³ section is not
-  final. When a player comes within 3 blocks of it, a projectile (ender pearl, arrow, …) hits it, or fluid or a
+- **Mirrored layout:** the world one level up is mirrored 16 times enlarged, so divided blocks that touch each other
+  have rooms that touch as well, with no wall between them, and machines in neighbouring rooms can build into a room.
+- **Tiles and the dimension pool:** a dimension can only be 2048 blocks tall, so the mirror is cut into tiles of
+  65536 × 126 × 65536 blocks (1,048,576 × 2016 × 1,048,576 room blocks). Each tile that is used gets one of 32
+  pre-registered pool dimensions (`microcosm:pool_0` … `pool_31`); the assignment and the scale of each pool
+  dimension are stored with the world. Tiles of all levels share the pool. A normal overworld needs four tiles
+  vertically (y -64…319), so a world typically uses a handful. More pool dimensions can be added with a data pack
+  (`data/microcosm/dimension/pool_<n>.json`, numbered without gaps).
+- **Seamless between neighbours:** a wall between a room and a neighbouring block is not final. When a player comes within 3 blocks of it, a projectile (ender pearl, arrow, …) hits it, or fluid or a
   piston presses against it, the neighbour is opened: a divisible block is divided (you face its microblocks), air
   becomes an empty room you can walk into (it collapses back to air once nothing is in it). From then on the two
   rooms touch without a wall, so walking, ender pearls, redstone, water, pistons and mobs all cross normally.
-  Walls to blocks that cannot be divided (chests, slabs, fluids) and to other 16³ sections stay.
+  Walls to blocks that cannot be divided (chests, slabs, fluids) stay.
+- **Across tile borders:** where two tiles meet, the rooms lie in different dimensions. The wall there lets players
+  through: walking, falling or flying into it moves you into the neighbouring tile's dimension at exactly the
+  matching position and with the same motion (the block on the other side is opened first; if it cannot be opened
+  you are pushed back). Redstone, fluids, items and other entities do not cross tile borders.
 - **Chained chunk loading:** a room stays loaded as long as its block is loaded.
 - **Break protection:** a Divided Block cannot be broken by hand; change it from the inside instead.
 - **Miniature:** a Divided Block is a glass-framed case that shows its room inside at 1/16 scale, one room block per pixel,
@@ -86,7 +95,7 @@ Material must never change its worth by crossing a scale boundary. The mod enfor
   those blocks is a 16×16×16 block around the room, so one texture pixel is one room block. The room is built like its
   block seen from inside: the walls are clear glass and only the room's twelve edges carry a solid frame (connected
   textures follow the room's shape).
-  Neighbouring divided blocks in the same section show their real rooms instead, since the mirrored layout
+  Neighbouring divided blocks in the same tile show their real rooms instead, since the mirrored layout
   puts them exactly there. `outside_view_radius` in the server config sets how far (default 4 blocks, 0 = off).
 - **Sky and time of day:** rooms share the overworld's clock, sky and day cycle, so you see the sun, moon and stars
   through the glass, daylight falls into rooms, and the enlarged world outside gets dark at night.
@@ -149,7 +158,9 @@ cooldown). All recipes can be replaced through data packs or KubeJS.
 ### Debug commands (operators)
 
 `/microcosm enter [pos]`, `/microcosm exit`, `/microcosm check [pos]`, `/microcosm info`,
-`/microcosm act <manipulator> <place|break|use> <slot> <x> <y> <z> ["x y z;..." nested blocks]`.
+`/microcosm act <manipulator> <place|break|use> <slot> <x> <y> <z> ["x y z;..." nested blocks]`,
+`/microcosm at <pos> <x> <y> <z> <command>` (runs a command in the room of the block at `pos`, at room-local
+`x y z`; chainable for nested rooms, e.g. `/microcosm at 0 64 0 3 0 3 microcosm at ~ ~ ~ 0 0 0 setblock ~ ~ ~ stone`).
 
 ## Fabrication recipes
 
@@ -193,7 +204,7 @@ Requires Java 25.
 
 Open a world directly: `./gradlew runClient -PquickPlay=<world name>`.
 
-Smoke test on the dedicated server (48 checks: rooms, recipes, ports, devices, dividing, scales, converter, dupe protection, opening walls):
+Smoke test on the dedicated server (46 checks: rooms, recipes, ports, devices, dividing, scales, converter, dupe protection, opening walls, tile borders):
 
 ```bash
 rm -rf run/world && mkdir -p run/world/datapacks && cp -r dev/smoketest-datapack run/world/datapacks/mctest
@@ -203,6 +214,6 @@ echo "eula=true" > run/eula.txt
 
 ## Next steps
 
-1. Seamless across 16³ section boundaries on level 1 (contiguous layout, limited to a 254-block height band)
+1. Let redstone, fluids and mobs cross tile borders too (only players cross today)
 2. EMI integration once there is an official EMI release for 26.1 (its official maven currently ends at 1.21.1;
    26.1 only has the unofficial "SEMI" port)

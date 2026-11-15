@@ -36,11 +36,7 @@ public final class PortLinks {
 
     /** Whether {@code pos} lies in the layer of its room that touches the room's {@code side}. */
     public static boolean isOnRoomSide(BlockPos pos, Direction side) {
-        RoomGeometry.Slot slot = RoomGeometry.slotAt(pos);
-        if (slot == null) {
-            return false;
-        }
-        BlockPos local = pos.subtract(slot.origin());
+        BlockPos local = pos.subtract(RoomGeometry.slotOrigin(pos));
         int last = RoomGeometry.ROOM - 1;
         return switch (side) {
             case DOWN -> local.getY() == 0;

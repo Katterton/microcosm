@@ -14,6 +14,8 @@ import net.neoforged.neoforge.client.event.RegisterItemDecorationsEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import dev.microcosm.network.OutsideViewPayload;
+import dev.microcosm.network.PoolSyncPayload;
+import dev.microcosm.world.PoolSync;
 import dev.microcosm.network.RecipeSyncPayload;
 import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.common.NeoForge;
@@ -65,6 +67,7 @@ public class MicrocosmClient {
             e.register(ViewPayload.TYPE, (payload, context) -> ViewerScreen.receive(payload));
             e.register(RecipeSyncPayload.TYPE, (payload, context) -> ClientRecipes.set(payload.recipes()));
             e.register(OutsideViewPayload.TYPE, (payload, context) -> OutsideViewRenderer.receive(payload));
+            e.register(PoolSyncPayload.TYPE, (payload, context) -> PoolSync.receive(payload));
         });
     }
 }

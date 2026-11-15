@@ -5,6 +5,11 @@ import java.util.Map;
 import net.minecraft.core.BlockPos;
 import dev.microcosm.world.DynamicWalls;
 import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.EntityCollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.redstone.Orientation;
@@ -29,10 +34,12 @@ public class CellWallBlock extends Block {
     private static final Map<Direction, BooleanProperty> CONNECTED = PipeBlock.PROPERTY_BY_DIRECTION;
     /** Whether this block is part of the frame along a room edge (otherwise it is clear glass). */
     public static final BooleanProperty FRAME = BooleanProperty.create("frame");
+    /** Walls at a tile border: players walk through them and are moved on to the next tile. */
+    public static final BooleanProperty PASSABLE = BooleanProperty.create("passable");
 
     public CellWallBlock(Properties properties) {
         super(properties);
-        BlockState state = stateDefinition.any().setValue(FRAME, true);
+        BlockState state = stateDefinition.any().setValue(FRAME, true).setValue(PASSABLE, false);
         for (BooleanProperty property : CONNECTED.values()) {
             state = state.setValue(property, false);
         }
@@ -47,7 +54,7 @@ public class CellWallBlock extends Block {
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         CONNECTED.values().forEach(builder::add);
-        builder.add(FRAME);
+        builder.add(FRAME, PASSABLE);
     }
 
     /** The wall state for {@code pos}, connected to the walls already around it. */
@@ -68,6 +75,15 @@ public class CellWallBlock extends Block {
             }
         }
         return state.setValue(FRAME, connections < 4);
+    }
+
+    @Override
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(PASSABLE) && context instanceof EntityCollisionContext entityContext
+                && entityContext.getEntity() instanceof Player) {
+            return Shapes.empty();
+        }
+        return Shapes.block();
     }
 
     @Override

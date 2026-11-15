@@ -9,15 +9,19 @@ import net.minecraft.world.level.block.piston.PistonBaseBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.portal.TeleportTransition;
+import java.util.Set;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
 /**
- * Walls between a room and the block next to it (in the same 16x16x16 section) are not final: as soon as a player
+ * Walls between a room and the block next to it are not final: as soon as a player
  * comes close, a projectile hits one, or fluid or a piston pushes against one, the neighbouring block is opened up
  * (divided, or turned into an empty room if it is air). Rooms of neighbouring blocks touch without a wall, so from
- * then on everything simply crosses over. Walls to other sections, and to blocks that cannot be divided, stay.
+ * then on everything simply crosses over. Walls to blocks that cannot be divided stay; at the edge of a tile,
+ * players are moved on to the neighbouring tile.
  */
 public final class DynamicWalls {
     /** How close (in blocks) a player gets to a wall before the neighbour opens. */
@@ -54,6 +58,10 @@ public final class DynamicWalls {
             return;
         }
         ServerLevel level = player.level();
+        if (!RoomGeometry.insideTile(player.position())) {
+            crossTileBorder(player, level);
+            return;
+        }
         BlockPos feet = player.blockPosition();
         for (BlockPos origin : new BlockPos[] {feet, feet.above()}) {
             for (Direction dir : Direction.values()) {
@@ -70,6 +78,34 @@ public final class DynamicWalls {
                 }
             }
         }
+    }
+
+    /**
+     * A player who walks or falls through the wall at the edge of a tile continues in the neighbouring tile, at
+     * exactly the corresponding position and with the same motion. If the block there cannot be opened, they are
+     * pushed back.
+     */
+    private static void crossTileBorder(ServerPlayer player, ServerLevel level) {
+        Vec3 parentPos = RoomManager.parentVec(level, player.position());
+        RoomManager.Parent parent = RoomManager.parentOf(level, player.blockPosition());
+        if (parentPos != null && parent != null) {
+            BlockPos block = BlockPos.containing(parentPos);
+            RoomManager.Room room = MicroBlocks.openForNeighbour(parent.level(), block)
+                    ? RoomManager.roomOf(parent.level(), block, false) : null;
+            if (room != null && room.level() != level) {
+                Vec3 target = RoomManager.childVec(room, parent.level(), parentPos);
+                Vec3 motion = player.getDeltaMovement();
+                ScaleRules.allowTravel(() -> player.teleport(new TeleportTransition(room.level(), target, motion,
+                        player.getYRot(), player.getXRot(), Set.of(), TeleportTransition.DO_NOTHING)));
+                return;
+            }
+        }
+        // Blocked: back into the tile.
+        double width = (double) RoomGeometry.TILE_WIDTH * RoomGeometry.ROOM - 0.01;
+        double height = RoomGeometry.TILE_HEIGHT * RoomGeometry.ROOM - 0.01;
+        Vec3 pos = player.position();
+        player.teleportTo(Math.clamp(pos.x, 0.01, width), Math.clamp(pos.y, 0.0, height - 2), Math.clamp(pos.z, 0.01, width));
+        player.setDeltaMovement(Vec3.ZERO);
     }
 
     /** Ender pearls, arrows and the like fly on into the neighbouring block instead of hitting the wall. */

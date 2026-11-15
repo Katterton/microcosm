@@ -1,4 +1,4 @@
-execute in microcosm:level_1 if block 515 3 227 minecraft:air run say INFO room_cleared
+microcosm at 16 64 16 0 0 0 execute if block ~227 ~3 ~227 minecraft:air run say INFO room_cleared
 execute if block 30 64 30 minecraft:dirt run say PASS uniform_room_collapses
 execute unless block 30 64 30 minecraft:dirt run say FAIL uniform_room_collapses
 # Scale converter: one gold block becomes 4096 Milliblock gold blocks, handed out 64 at a time
